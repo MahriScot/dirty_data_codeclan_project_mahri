@@ -280,7 +280,8 @@ trying things out
 single_sightings <- birds_and_ships %>% 
   select(species_common_name, birds_counted) %>% 
   arrange(species_common_name) %>%
-  mutate(lone_birds = (birds_counted == 1)) 
+  mutate(lone_birds = (birds_counted == 1)) %>% 
+  count(lone_birds == TRUE)
 single_sightings
 
 single_sightings %>% 
@@ -290,7 +291,22 @@ single_sightings %>%
 
 # NEED TO COME BACK TO THIS 
 ```
+```{r}
 
+single_sightings <- birds_and_ships %>% 
+  group_by(species_common_name) %>% 
+  filter((max(birds_counted)) == 1) %>% 
+  #arrange(species_common_name) %>% 
+  #count(species_common_name) %>% 
+  distinct(species_common_name) %>% 
+  pull() %>% 
+  length()
+ # summarise(length(species_common_name))
+single_sightings
+
+
+
+```
 
 
 5. How many penguins were seen? (Hint: there are many types of penguin)
@@ -341,6 +357,5 @@ penguins_seen <- birds_and_ships %>%
 # Scientific Name: 
 # Species Abbreviation: 
 ```
-
 
 

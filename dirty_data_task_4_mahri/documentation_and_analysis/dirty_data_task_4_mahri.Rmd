@@ -1,0 +1,44 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(readxl)
+```
+
+```{r}
+candy_2015 <- read_excel("../raw_data/boing-boing-candy-2015.xlsx")
+candy_2016 <- read_excel("../raw_data/boing-boing-candy-2016.xlsx")
+candy_2017 <- read_excel("../raw_data/boing-boing-candy-2017.xlsx")
+
+here::here()
+```
+
+From glimpse - note that there are a lot of columns that you can't "view"
+```{r}
+glimpse(candy_2015)
+glimpse(candy_2016)
+glimpse(candy_2017)
+```
+
+
+
+```{r}
+library(janitor)
+
+```
+
+```{r}
+
+candy_2015_janitor <- janitor::clean_names(candy_2015)
+candy_2015_janitor
+
+candy_2016_janitor <- janitor::clean_names(candy_2016)
+candy_2016_janitor
+
+candy_2017_janitor <- janitor::clean_names(candy_2017)
+candy_2017_janitor
+```
+
