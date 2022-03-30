@@ -81,11 +81,12 @@ candy_2015_renamed
 
 ```{r}
 candy_2016_removed <- candy_2016_janitor %>% 
-  select(-c(107:123), -c(104, 105), -c(vicodin, vials_of_pure_high_fructose_corn_syrup_for_main_lining_into_your_vein, trail_mix, spotted_dick, person_of_interest_season_3_dvd_box_set_not_including_disc_4_with_hilarious_outtakes, minibags_of_chips, kale_smoothie, joy_joy_mit_iodine, hugs_actual_physical_hugs, heath_bar, healthy_fruit, glow_sticks, generic_brand_acetaminophen, dental_paraphenalia, creepy_religious_comics_chick_tracts, chardonnay, cash_or_other_forms_of_legal_tender, broken_glow_stick, boxo_raisins, bonkers_the_board_game))
+  select(-c(104, 105, 107:123), -c(vicodin, vials_of_pure_high_fructose_corn_syrup_for_main_lining_into_your_vein, trail_mix, spotted_dick, person_of_interest_season_3_dvd_box_set_not_including_disc_4_with_hilarious_outtakes, minibags_of_chips, kale_smoothie, joy_joy_mit_iodine, hugs_actual_physical_hugs, heath_bar, healthy_fruit, glow_sticks, generic_brand_acetaminophen, dental_paraphenalia, creepy_religious_comics_chick_tracts, chardonnay, cash_or_other_forms_of_legal_tender, broken_glow_stick, boxo_raisins, bonkers_the_board_game))
 
 candy_2016_removed
 ```
 
+2016 - rename so they match other sheets
 ```{r}
 candy_2016_renamed <- candy_2016_removed %>% 
   rename(trick_or_treating = are_you_going_actually_going_trick_or_treating_yourself, gender = your_gender, age = how_old_are_you, country = which_country_do_you_live_in, state_or_prov = which_state_province_county_do_you_live_in, mary_janes_1 = anonymous_brown_globs_that_come_in_black_and_orange_wrappers, bonkers = bonkers_the_candy, restaurant_candy = candy_that_is_clearly_just_the_stuff_given_out_for_free_at_restaurants, chick_o_stick = chick_o_sticks_we_don_t_know_what_that_is, gummy_bears = gummy_bears_straight_up, hersheys_milk_chocolate = hershey_s_milk_chocolate, licorice_black = licorice_yes_black, peanut_m_ms = peanut_m_m_s, party_bag_m_ms = third_party_m_ms, reeses_peanut_butter_cups = reese_s_peanut_butter_cups, sourpatch_kids = sourpatch_kids_i_e_abominations_of_nature, sweetarts = sweet_tarts, sweetums = sweetums_a_friend_to_diabetes, circus_peanuts = those_odd_marshmallow_circus_peanut_things, toblerone = tolberone_something_or_other)
@@ -93,4 +94,28 @@ candy_2016_renamed <- candy_2016_removed %>%
 candy_2016_renamed
 ```
 
+
+2017 clean - remove those not candy 
+
+```{r}
+candy_2017_cols_removed <- candy_2017_janitor %>%  
+  select(-c(102, 104, 105, 107, 108, 110:120), -c(q6_spotted_dick, q6_sandwich_sized_bags_filled_with_boo_berry_crunch, q6_real_housewives_of_orange_county_season_9_blue_ray, q6_minibags_of_chips, q6_abstained_from_m_ming, q6_kale_smoothie, q6_joy_joy_mit_iodine, q6_hugs_actual_physical_hugs, q6_heath_bar, q6_healthy_fruit, q6_glow_sticks, q6_generic_brand_acetaminophen, q6_dental_paraphenalia, q6_creepy_religious_comics_chick_tracts, q6_chardonnay, q6_cash_or_other_forms_of_legal_tender, q6_broken_glow_stick, q6_boxo_raisins, q6_bonkers_the_board_game))
+
+candy_2017_cols_removed
+```
+
+2017 - rename - get rid of q1/2/3/4/5/6 at the start of col names
+and rename to match 2015 and 16
+
+```{r}
+
+candy_2017_q_removed <- candy_2017_cols_removed %>% 
+  rename_all(~ sub("^[a-z0-9]{2}_", "", 
+                   make.names(names(candy_2017_cols_removed))))
+
+candy_2017_renamed <- candy_2017_q_removed %>% 
+  rename(trick_or_treating = going_out, state_or_prov = state_province_county_etc, x100_grand_bar = `100_grand_bar`, mary_janes_1 = anonymous_brown_globs_that_come_in_black_and_orange_wrappers_a_k_a_mary_janes, bonkers = bonkers_the_candy, restaurant_candy = candy_that_is_clearly_just_the_stuff_given_out_for_free_at_restaurants, chick_o_stick = chick_o_sticks_we_don_t_know_what_that_is, gummy_bears = gummy_bears_straight_up, hersheys_milk_chocolate = hershey_s_milk_chocolate, licorice_black = licorice_yes_black, peanut_m_ms = peanut_m_m_s, green_m_ms = green_party_m_ms, lone_m_ms = independent_m_ms, reeses_peanut_butter_cups = reese_s_peanut_butter_cups, sourpatch_kids = sourpatch_kids_i_e_abominations_of_nature, sweetarts = sweet_tarts, sweetums = sweetums_a_friend_to_diabetes, circus_peanuts = those_odd_marshmallow_circus_peanut_things, toblerone = tolberone_something_or_other)
+  
+candy_2017_renamed
+```
 
