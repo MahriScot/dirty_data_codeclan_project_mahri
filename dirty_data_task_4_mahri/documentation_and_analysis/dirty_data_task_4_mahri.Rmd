@@ -42,3 +42,55 @@ candy_2017_janitor <- janitor::clean_names(candy_2017)
 candy_2017_janitor
 ```
 
+
+just looking at who is reporting back about these ones... 
+```{r}
+
+candy_2017_janitor %>% 
+  select(q3_age, q2_gender, q6_independent_m_ms, q6_green_party_m_ms)
+
+candy_2016_janitor %>% 
+  select(york_peppermint_patties_ignore)
+
+```
+
+
+2015 clean - remove columns that aren't candy (see readme) I went from bottom to top to check index as i went
+```{r}
+names(candy_2015_janitor)
+
+candy_2015_cols_removed <- candy_2015_janitor %>% 
+  select(-c(116:124), -c(97:113), -c(93:95), -c(90, 91), -c(peterson_brand_sidewalk_chalk, spotted_dick, mint_leaves, joy_joy_mit_iodine, minibags_of_chips, lapel_pins, kale_smoothie, hugs_actual_physical_hugs, heath_bar, healthy_fruit, creepy_religious_comics_chick_tracts, broken_glow_stick, glow_sticks, generic_brand_acetaminophen, dental_paraphenalia, cash_or_other_forms_of_legal_tender, vials_of_pure_high_fructose_corn_syrup_for_main_lining_into_your_vein, box_o_raisins))
+
+candy_2015_cols_removed
+view(candy_2015_cols_removed)
+```
+
+2015 clean - renaming columns so they match other years
+
+```{r}
+
+candy_2015_renamed <- candy_2015_cols_removed %>% 
+  rename(age = how_old_are_you, trick_or_treating = are_you_going_actually_going_trick_or_treating_yourself, mary_janes_1 = anonymous_brown_globs_that_come_in_black_and_orange_wrappers, brach_not_including_candy_corn = brach_products_not_including_candy_corn, restaurant_candy = candy_that_is_clearly_just_the_stuff_given_out_for_free_at_restaurants, hersheys_dark_chocolate = dark_chocolate_hershey, gummy_bears = gummy_bears_straight_up, hersheys_kissables = hershey_s_kissables, hersheys_milk_chocolate = hershey_s_milk_chocolate, licorice_black = licorice, reeses_peanut_butter_cups = reese_s_peanut_butter_cups, toblerone = tolberone_something_or_other, peanut_m_ms = peanut_m_m_s, chick_o_stick = chick_o_sticks_we_don_t_know_what_that_is, circus_peanuts = those_odd_marshmallow_circus_peanut_things, sea_salt_chocolate = sea_salt_flavored_stuff_probably_chocolate_since_this_is_the_it_flavor_of_the_year)
+
+candy_2015_renamed
+```
+
+
+2016 clean - remove unnecessary columns - bottom to top
+
+```{r}
+candy_2016_removed <- candy_2016_janitor %>% 
+  select(-c(107:123), -c(104, 105), -c(vicodin, vials_of_pure_high_fructose_corn_syrup_for_main_lining_into_your_vein, trail_mix, spotted_dick, person_of_interest_season_3_dvd_box_set_not_including_disc_4_with_hilarious_outtakes, minibags_of_chips, kale_smoothie, joy_joy_mit_iodine, hugs_actual_physical_hugs, heath_bar, healthy_fruit, glow_sticks, generic_brand_acetaminophen, dental_paraphenalia, creepy_religious_comics_chick_tracts, chardonnay, cash_or_other_forms_of_legal_tender, broken_glow_stick, boxo_raisins, bonkers_the_board_game))
+
+candy_2016_removed
+```
+
+```{r}
+candy_2016_renamed <- candy_2016_removed %>% 
+  rename(trick_or_treating = are_you_going_actually_going_trick_or_treating_yourself, gender = your_gender, age = how_old_are_you, country = which_country_do_you_live_in, state_or_prov = which_state_province_county_do_you_live_in, mary_janes_1 = anonymous_brown_globs_that_come_in_black_and_orange_wrappers, bonkers = bonkers_the_candy, restaurant_candy = candy_that_is_clearly_just_the_stuff_given_out_for_free_at_restaurants, chick_o_stick = chick_o_sticks_we_don_t_know_what_that_is, gummy_bears = gummy_bears_straight_up, hersheys_milk_chocolate = hershey_s_milk_chocolate, licorice_black = licorice_yes_black, peanut_m_ms = peanut_m_m_s, party_bag_m_ms = third_party_m_ms, reeses_peanut_butter_cups = reese_s_peanut_butter_cups, sourpatch_kids = sourpatch_kids_i_e_abominations_of_nature, sweetarts = sweet_tarts, sweetums = sweetums_a_friend_to_diabetes, circus_peanuts = those_odd_marshmallow_circus_peanut_things, toblerone = tolberone_something_or_other)
+
+candy_2016_renamed
+```
+
+
