@@ -171,9 +171,181 @@ distinct(candy_2017_renamed, country) #118 some silly, some e.g. USA, US, us, u.
 distinct(candy_2017_renamed, starburst)
 ```
 
+
+
+
+
+---------------- COUNTRY CLEANING -------------------------- 
+
+Note that 2015 (5630 rows of 9349) has no country data... 
+
+```{r}
+candy_2016_renamed %>% 
+  filter(is.na(country))
+#21 NA
+
+candy_2017_renamed %>% 
+  filter(is.na(country)) 
+# 64 NA
+```
+
+
+
+
+```{r}
+library(stringr)
+```
+
+2016 
+
+```{r}
+
+country_clean_2016 <- candy_2016_renamed %>% 
+  mutate(country = str_replace_all(country, pattern = "^[uU]+[sS]+[aA]+", "States"),
+         country = str_replace_all(country, pattern = "^[uU]\\.[sS]\\.[aA]\\.", "States"),
+         country = str_replace_all(country, pattern = "^[uU]\\.[sS]\\.", "States"),
+         country = str_replace_all(country, pattern = "^[uU][sS]", "States"),
+         country = str_replace_all(country, pattern = "[U][S][A][!]\\s[U][S][A][!]\\s[U][S][A][!]", "States"),
+         # didn't work... try again below
+         country = str_replace_all(country, pattern = "[sS]tates", "States"),
+         country = str_replace_all(country, pattern = "[uU][sS][sS][aA]", "States"),
+        # country = str_replace_all(country, pattern = "[ *][uU][nN][iI][tT][eD]\\s[sS][tT][aA][tT][eE][sS]\\s[oO][fF]\\s[aA][mM][eE][rR][iI][cC][aA][ *]", "America"),
+         # united states of america still not working... 
+        country = str_replace_all(country, pattern = "^[uU][nN][iI][tT][eE][dD]+\\s[sS][tT][aA][tT][eE][sS]", "States"),
+        # country = str_replace_all(country, pattern = "^\\s*[uU][nN][iI][tT][eE][dD]+\\s[sS][tT][aA][tT][eE][sS]\\s*", "States"),
+        #country = str_replace_all(country, pattern = "^[ ]*[uU][nN][iI][tT][eE][dD]+\\s[sS][tT][aA][tT][eE][sS][ ]*", "States"),
+        country = str_replace_all(country, pattern = "^[uU][nN][iI][tT][eE][dD]+\\s[sS][tT][aA][tT][eE]", "States"),
+        # the above doesn't work for all...
+        country = str_replace_all(country, pattern = "[uU][nN][iI][tT][sS]\\s[sS][tT][aA][tT][eE][sS]", "States"),
+        country = str_replace_all(country, pattern = "[uU][nN][iI][tT][eE][dD]\\s[sS][tT][eE][tT][eE][sS]", "States"),
+        country = str_replace_all(country, pattern = "[uU][nN][iI][tT][eE][dD]\\s[sS][aA][tT][eE][sS]", "States"),
+        country = str_replace_all(country, pattern = "^[mM][uU|eE][rR][iI][cC][aA]", "States"),
+        country = str_replace_all(country, pattern = "^[aA][mM][eE][rR][iI][cC][aA]", "States"),
+        country = str_replace_all(country, pattern = "[sS][tT][aA][tT][eE][sS][!]", "States"),
+        country = str_replace_all(country, pattern = "!.*", ""),
+         #the ! arguement isn't working! still get e.g. USA! USA! USA! as 
+         #States! USA! USA!" 
+        # country = str_replace_all(country, pattern = "^.*[!].*", "States"),
+         #country = str_replace_all(country, pattern = "^[Uu]+[Ss]+[Aa]+[!{1, .}]", "America")
+         # country = str_replace_all(country, pattern = "^[uU]+[sS]+[aA]+[:punct:]+", "America")
+         country = str_replace_all(country, pattern = "[a-zA-Z]+ [-]+ [uU][sS][aA]", "States"), 
+        # the above only changed "the best one - usa" to "the best States" 
+        country = str_replace_all(country, pattern = "Cascadia", "States"),
+        # one of these has changed to The republic of States
+        country = str_replace_all(country, pattern = "Trumpistan", "States"),
+        country = str_replace_all(country, pattern = "Sub-Canadian North America... 'Merica", "States"),
+        country = str_replace_all(country, pattern = "[0-9][0-9][.][0-9]", "States"),
+         country = str_replace_all(country, pattern = "the best ", ""),
+         country = str_replace_all(country, pattern = " of [aA]merica", ""),
+         country = str_replace_all(country, pattern = " USA USA USA", ""),
+        # how do i make it USA 1 to 3 times?
+         country = str_replace_all(country, pattern = " USA USA", ""),
+         country = str_replace_all(country, pattern = " USA", ""),
+         # the above made "not the USA or canada" into "not the or canada"
+         country = str_replace_all(country, pattern = "^[uU][kK]", "United Kingdom"),
+         country = str_replace_all(country, pattern = "^[uU][nN][iI][tT][eE][dD]+\\s[kK][iI][nN][dD][oO][mM]", "United Kingdom"),
+         country = str_replace_all(country, pattern = "^[eE][nN][gG][lL][aA][nN][dD]", "United Kingdom"),
+         country = str_replace_all(country, pattern = "^[cC]anada", "Canada")
+         )
+
+# view(country_clean_2016)
+
+country_clean_2016 %>% 
+  distinct(country)
+
+
+```
+
+country clean 2017 
+```{r}
+# there must be a way to say U and anything after, space, S and anything after
+
+country_clean_2017 <- candy_2017_renamed %>% 
+  mutate(country = str_replace_all(country, pattern = "^[uU]+[sS]+[aA]+", "States"),
+         country = str_replace_all(country, pattern = "^[uU]\\.[sS]\\.[aA]\\.", "States"),
+         country = str_replace_all(country, pattern = "^[uU]\\.[sS]\\.", "States"),
+         country = str_replace_all(country, pattern = "^[uU][sS]", "States"),
+         country = str_replace_all(country, pattern = "^[uU]\\s[sS]", "States"),
+         country = str_replace_all(country, pattern = "[U][S][A][!]\\s[U][S][A][!]\\s[U][S][A][!]", "States"),
+         # didn't work... try again below
+         country = str_replace_all(country, pattern = "[sS]tates", "States"),
+         country = str_replace_all(country, pattern = "[uU][sS][sS][aA]", "States"),
+        # country = str_replace_all(country, pattern = "[ *][uU][nN][iI][tT][eD]\\s[sS][tT][aA][tT][eE][sS]\\s[oO][fF]\\s[aA][mM][eE][rR][iI][cC][aA][ *]", "America"),
+         # united states of america still not working... 
+        country = str_replace_all(country, pattern = "^[uU][nN][iI][tT][eE][dD]+\\s[sS][tT][a-zA-Z][tT][eE][sS]", "States"),
+        country = str_replace_all(country, pattern = "^[uU][nN][iI][eE][dD]+\\s[sS][tT][a-zA-Z][tT][eE][sS]", "States"),
+        # country = str_replace_all(country, pattern = "^\\s*[uU][nN][iI][tT][eE][dD]+\\s[sS][tT][aA][tT][eE][sS]\\s*", "States"),
+        #country = str_replace_all(country, pattern = "^[ ]*[uU][nN][iI][tT][eE][dD]+\\s[sS][tT][aA][tT][eE][sS][ ]*", "States"),
+        country = str_replace_all(country, pattern = "^[uU][nN][iI][tT][eE][a-zA-Z]+\\s[sS][tT][aA][tT|eE][eE|sS]", "States"),
+        # the above doesn't work for all...
+        country = str_replace_all(country, pattern = "[uU][nN][iI][tT][sS]\\s[sS][tT][aA][tT][eE][sS]", "States"),
+        country = str_replace_all(country, pattern = "[uU][nN][iI][tT][eE][dD]\\s[sS][tT][eE][tT][eE][sS]", "States"),
+        country = str_replace_all(country, pattern = "[uU][nN][iI][tT][eE][dD]\\s[sS][aA][tT][eE][sS]", "States"),
+        country = str_replace_all(country, pattern = "^[mM][uU|eE][rR][iI][cC][aA]", "States"),
+        country = str_replace_all(country, pattern = "^\\'[mM][uU|eE][rR][iI][cC][aA]", "States"),
+        country = str_replace_all(country, pattern = "^[aA][mM][eE][rR][iI][cC][aA]", "States"),
+        country = str_replace_all(country, pattern = "[sS][tT][aA][tT][eE][sS][!|a-zA-Z]", "States"),
+        country = str_replace_all(country, pattern = "!.*", ""),
+         #the ! arguement isn't working! still get e.g. USA! USA! USA! as 
+         #States! USA! USA!" 
+        # country = str_replace_all(country, pattern = "^.*[!].*", "States"),
+         #country = str_replace_all(country, pattern = "^[Uu]+[Ss]+[Aa]+[!{1, .}]", "America")
+         # country = str_replace_all(country, pattern = "^[uU]+[sS]+[aA]+[:punct:]+", "America")
+         country = str_replace_all(country, pattern = "[a-zA-Z]+ [-]+ [uU][sS][aA]", "States"), 
+        # the above only changed "the best one - usa" to "the best States" 
+         country = str_replace_all(country, pattern = "the best ", ""),
+         country = str_replace_all(country, pattern = " of [aA]merica", ""),
+         country = str_replace_all(country, pattern = " USA USA USA", ""),
+        # how do i make it USA 1 to 3 times?
+         country = str_replace_all(country, pattern = " USA USA", ""),
+         country = str_replace_all(country, pattern = " USA", ""),
+         # the above made "not the USA or canada" into "not the or canada"
+        country = str_replace_all(country, pattern = "StatesSAUSA", "States"),
+        country = str_replace_all(country, pattern = "unhinged ", ""),
+        country = str_replace_all(country, pattern = " of A", ""),
+        country = str_replace_all(country, pattern = "unite States", "States"),
+        country = str_replace_all(country, pattern = "The United [sS]", "S"),
+        country = str_replace_all(country, pattern = "North Carolina", "States"),
+        country = str_replace_all(country, pattern = "Pittsburgh", "States"),
+        country = str_replace_all(country, pattern = "New York", "States"),
+        country = str_replace_all(country, pattern = "Trumpistan", "States"),
+        country = str_replace_all(country, pattern = "UD", "States"),
+        country = str_replace_all(country, pattern = "New Jersey", "States"),
+        country = str_replace_all(country, pattern = "murrika", "States"),
+        country = str_replace_all(country, pattern = "Alaska", "States"),
+        country = str_replace_all(country, pattern = "N. America", "States"),
+        country = str_replace_all(country, pattern = "I don't know anymore", "States"),
+        country = str_replace_all(country, pattern = "[3|4][0-9]", "States"),
+        country = str_replace_all(country, pattern = "^[uU][.]*[kK][.]*", "United Kingdom"),
+        country = str_replace_all(country, pattern = "^[uU][nN][iI][tT][eE][dD]+\\s[kK][iI][nN][dD][oO][mM]", "United Kingdom"),
+        country = str_replace_all(country, pattern = "^[uU][nN][iI][tT][eE][dD]+\\s[kK][iI][nN][gG][dD][oO][mM]", "United Kingdom"),
+         country = str_replace_all(country, pattern = "^[eE][nN][gG|dD][lL][aA][nN][dD]", "United Kingdom"),
+        country = str_replace_all(country, pattern = "Scotland", "United Kingdom"),
+         country = str_replace_all(country, pattern = "^[cC][a-zA-Z]{5}", "Canada"),
+        country = str_replace_all(country, pattern = "^[cC][a-zA-Z]{5}rnia", "Canada"),
+        country = str_replace_all(country, pattern = "^[cC][a-zA-Z]{5}ia", "Canada"),
+        country = str_replace_all(country, pattern = "^[cC][a-zA-Z]{5}`", "Canada")
+       # country = str_replace_all(country, pattern = "^Can", "Canada"), 
+        # country = str_replace_all(country, pattern = "^Canae", "Canada")
+         )
+
+# view(country_2017)
+
+country_clean_2017 %>% 
+  distinct(country)
+
+#country_2017 %>% 
+#  select(country, state_or_prov) %>% 
+ # filter(is.na(country))
+# 4 rows have an American state under "state_or_prov" 
+```
+
+
+
 Join all three 
 ```{r}
-bound_candy <- bind_rows(candy_2015_renamed, candy_2016_renamed, candy_2017_renamed)
+bound_candy <- bind_rows(candy_2015_renamed, country_clean_2016, country_clean_2017)
+
 
 bound_candy <- bound_candy %>% 
   relocate(country, .before = 4) %>% 
@@ -186,61 +358,17 @@ view(bound_candy)
 
 
 
----------------- COUNTRY CLEANING -------------------------- 
-Note that 2015 (5630 rows of 9349) has no country data... this seems to be 
-American so maybe change NAs to USA at later date(??)
+5715 rows in bound_candy has NA 
 
 ```{r}
-bound_candy %>% 
-  distinct(country)
-# 169 country variations 
 
 bound_candy %>% 
   filter(is.na(country))
 # 5715 rows in country are NA
 ```
 
-```{r}
-#just to see that there are the right amount of NAs 
-#country_cleaning <- bound_candy %>% 
- # select(country, state_or_prov) %>% 
-  #filter(!is.na(country))
-# 3634 rows remain with NAs gone... 
-#view(country_cleaning)
-
-# first... remove punctuation
-library(stringr)
-
-#below is deff wrong 
-#country_clean <- bound_candy %>% 
- # str_replace_all("us" | "US" | "united states" | "usa" | "uSA" | "United States of America" | "United States" | "USSA" | "U.S.A." | "USA!", "USA")
-#country_clean
-
-#candy_2016_renamed %>% 
-#  mutate(country = str_replace_all(country, pattern = "\\.\\!", "")
-#view(candy_2016_renamed)
-  
-
-country_2016 <- candy_2016_renamed %>% 
-  mutate(country = str_replace_all(country, pattern = "^[uU]+[sS]+[aA]+", "America"),
-         country = str_replace_all(country, pattern = "^[uU]+\\.+[sS]+\\.+[aA]+\\.", "America"),
-         country = str_replace_all(country, pattern = "^[Uu]+[Ss]+[Aa]+[!{1, }]", "America")
-         #the ! arguement isn't working!
-        # country = str_replace_all(country, pattern = "^[uU]+[sS]+[aA]+[:punct:]+", "America")
-         )
-view(country_2016)
 
 
-str_replace_all(my_string, "[^[:alnum:]]", "") 
-
-```
-
-mutate(col name, 
-      .fns = ~str_remove_all(., 
-      "JUV|AD|IMM|SUB|PL*|[0-9]|", 
-      .names = 'fixed_{.col}')
-      )
-      
       
 
 AGE QUESTION 
@@ -262,10 +390,3 @@ AGE QUESTION
 
 ```
 
-library(stringr)
-
-year_pattern <- "^[0-9]{4}"
-
-col_removed_candy_2015 %>% 
-  select(timestamp) %>% 
-  str_extract(year_pattern)
