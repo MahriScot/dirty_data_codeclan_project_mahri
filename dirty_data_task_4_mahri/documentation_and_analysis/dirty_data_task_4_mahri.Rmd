@@ -1,5 +1,5 @@
 ---
-title: "R Notebook"
+title: "Dirty Data Task 4 Analysis_Mahri"
 output: html_notebook
 ---
 
@@ -12,6 +12,7 @@ library(readxl)
 candy_2015 <- read_excel("../raw_data/boing-boing-candy-2015.xlsx")
 candy_2016 <- read_excel("../raw_data/boing-boing-candy-2016.xlsx")
 candy_2017 <- read_excel("../raw_data/boing-boing-candy-2017.xlsx")
+candy_2015 <- read_csv("../data_cleaning_scripts/dirty_data_task_4_cleaning_script_mahri.R")
 
 here::here()
 ```
@@ -328,10 +329,13 @@ bound_candy <- bound_candy %>%
 
 
 **QUESTION 1** 
-What is the total number of candy ratings given across the three years. 
-(Number of candy ratings, not the number of raters. Don’t count missing values)
+**What is the total number of candy ratings given across the three years.**
+**(Number of candy ratings, not the number of raters. Don’t count missing values)**
 
-ANSWER - 590,010 ratings
+* I removed unnecessary columns and pivoted longer all the candy columns so that 
+  each rating could be seen alongside it's equivalent candy and then calculated
+
+**ANSWER** - 590,010 ratings
 ```{r}
 
 total_ratings <- bound_candy %>% 
@@ -351,11 +355,12 @@ total_ratings
 
 
 **AGE CLEANING**
-Age is a character column with 274 values. They are numbers, NAs, and strange 
-and silly values 
-- changed age column to a numeric but it output strange figures, so I specified 
-  integer and strange answers became NAs. 
-- Seems unlikely that anyone > 100 years old is answering so I removed them
+
+Age is a character column with 274 distinct values. They are a mix of numbers, NAs, 
+and strange and silly values.
+* I changed the "age" column to a numeric but it output strange figures, so I 
+  specified "as.integer" and the strange answers became NAs. 
+* It seems unlikely that anyone over 100 years old is taking part, so I removed them.
 
 ```{r}
 # bound_candy %>% 
@@ -375,15 +380,21 @@ bound_age_cleaning
 ```
 
 **QUESTION TWO**
-What was the average age of people who are going out trick or treating?
+**What was the average age of people who are going out trick or treating?**
 
-I know the responses for trick or treating are "Yes" "No " and "NA"
+* I checked that the responses for trick or treating are "Yes" "No " and "NA".
+* Selecting the appropriate columns, I grouped them by whether individuals were
+  trick or treating or not, then calculated the mean age of each response given, 
+  rounding the final value to an age in years. 
+* Both a tibble with the average of each of the three responses, and one of just
+  the average age for the answer "Yes", were recorded below
 
-ANSWER - The (rounded) average age of those going trick or treating is 35
+**ANSWER** - The (rounded) average age of those going trick or treating is 35
 years old (34.94897 is the unrounded value)
 
 ```{r}
-
+# bound_age_cleaning %>% 
+#   distinct(trick_or_treating)
 
 bound_age_cleaning %>% 
   select(age, trick_or_treating) %>% 
@@ -400,8 +411,12 @@ bound_age_cleaning %>%
 ```
 
 **QUESTION THREE**
-What was the average age of people who are not going trick or treating?
-ANSWER - The (rounded) average age of those not going trick or treating is 39
+**What was the average age of people who are not going trick or treating?**
+
+* As in question two, however focusing on the answer "No" that was given when 
+  asked.
+
+**ANSWER** - The (rounded) average age of those not going trick or treating is 39
 years old (39.10454 is the unrounded value)
 
 ```{r}
@@ -423,18 +438,18 @@ bound_age_cleaning %>%
 **For each of joy, despair and meh, which candy bar revived the most of these** 
 **ratings?** 
 
-As in question 1, a 2 column tibble with candy and rating was created and a count
+* As in question 1, a 2 column tibble with candy and rating was created and a count
 of each distinct answer was made - firstly counting each for each response and 
 each candy, then filtering to find the maximum count for each rating. 
 
-ANSWER -  
-Despair: gum that comes with baseball cards returned the most despair responses
+**ANSWER**  
+* Despair: gum that comes with baseball cards returned the most despair responses
           with 7,341
-Joy:Full sized candy bars made the most people joyful with 7,589 responses.
+* Joy: Full sized candy bars made the most people joyful with 7,589 responses.
     This seems very generic so I ran it again to remove the full sized candy
     bars and the top Joy response was: 7369 responses for reeses peanut butter
     cups
-Meh: 1,570 "Meh" responses were given for lollipops
+* Meh: 1,570 "Meh" responses were given for lollipops
 
 
 ```{r}
@@ -471,15 +486,32 @@ rated_candy %>%
 
 ```
 
+**QUESTION FIVE**
+**How many people rated Starburst as despair?**
+
+* Using the pivoted table of candy and their ratings from previous questions, 
+  the total count can be seen below
+
+**ANSWER** - 1990 people voted despair for starbursts.
+
+```{r}
+
+rated_candy %>% 
+  filter(candy == "starburst") %>% 
+  group_by(rating) %>% 
+  summarise(rating_count = n())
+
+```
+
+
 
 **COUNTRY CLEANING** 
 
 Firstly getting an idea of NAs and distinct country values:
 
-- Note that 2015 (5630 rows of 9349) has no country data... (all NA)
-- 5715 rows in bound_candy has NA 
-
-- There are 169 distinct country names including NAs, miss-spellings, and silly/ 
+* Note that the year 2015 (5630 rows of 9349) has no country data. (all "NA")
+* 5715 rows in bound_candy are "NA"
+* There are 169 distinct country names including NAs, miss-spellings, and silly/ 
  unknown answers 
 
 ```{r}
@@ -491,14 +523,6 @@ bound_candy %>%
   distinct(country) 
 ```
 
-
-Using stringr and regex to reduce "country" values
-- For columns that were numbers or clearly fake (silly) answers, I checked 
-  the state or province column to see if there was a match to a country
-- I checked my work one row at a time to try and ensure I did not change 
-  anything that was not meant to be changed. 
-- I am sure there are faster/ better ways of doing this, but I was practicing
-  different options
  
 
 ```{r}
@@ -506,96 +530,318 @@ library(stringr)
 
 ```
 
-country = str_replace_all(country, pattern = "[ ]*[uU]+[ .!]*[sS]+[ .!]*[aA]*[ .!]*", "States")
-tried this to change what was now States USA USA but it changed that to StatesStatesStates and also Australia to AStatestralia... 
+ 
+Using stringr and regex to reduce "country" values
+
+* This started out a lot longer, and I am sure there are faster/ better ways of 
+  doing this, but I was practicing different options (If it were shorter - 
+  I am not sure about the difficulties that may arise if other countries were 
+  added at a later date?)
+  
+* For columns that were numbers, inputs like "N. America", or clearly fake 
+  (silly) answers, I checked the state or province column to see if there was a 
+  match to a country
+  
+* I checked my work one row at a time to try and ensure I did not change 
+  anything that was not meant to be changed.
+  
+* Tried to be careful when changing numbers as some = States according to their 
+  state/province column and some do not equal anything. 
+
+* Accidentally changed some words like A(a)ustralia to A(a)States, and Austria 
+  to Statesa... which is ok as I am just including them as "other world"
+  
+* There are issues with "Statesof A"(there are 4), "the best one -States"(1), 
+  "TheStates"(2), "The States" (1), and a couple of others but as there are so 
+  few so I have moved on
+  
+* Cascadia includes Canada and States so I left it as is
+
+* United Kingdom is inclusive of "Endland", "England", "Scotland" and variations
+  of "UK"
+  
+* Those under "Ireland" are all in the Republic
+
+* There are some more notes on specific pieces of code within the code chunk
+
 ```{r}
-bound_country_clean <- bound_candy %>% 
+bound_country_clean <- bound_age_cleaning %>% 
   mutate(country = str_replace_all(country, pattern = "[0-9][0-9][.][0-9]", "States"),
          country = str_replace_all(country, pattern = "[3|4|5][0-9]", "States"),
-         country = str_replace_all(country, pattern = "^[ ]*[uU]+[ .!]*[sS]+[ .!]*[aA]*[ .!]*", "States"),
-         country = str_replace_all(country, pattern = "^[uU][nited]+\\s[sS][tT]*[aA|eE|sS][tT][eE][sS|aA]", "States"),
-         country = str_replace_all(country, pattern = "^[uU][nN][iI][tT][eE][dD|sS]+\\s[sS][tT][aA][tT][eE|sS][sS]*", "States"),
-         # the above doesn't work for all... i presume there are spaces somewhere
-         country = str_replace_all(country, pattern = "^[uU][nN][iI][tT][sS]+\\s[sS][tT][aA][tT][eE][sS]*", "States"),
-        country = str_replace_all(country, pattern = "[sS][tT][aA|eE][tT]*[eE][sS]*", "States"), 
-        
-         country = str_replace_all(country, pattern = "[uU]+[sS]+[aA]+", "States"),
-        country = str_replace_all(country, pattern = "^[mM][uU|eE][rR]+[iI][cC|kK][aA]", "States"),
+         country = str_replace_all(country, pattern = "[uU][a-zA-Z.]* [sS][a-zA-Z]* [oO][fF] [Aa]*[a-zA-Z]*", "States"),
+         country = str_replace_all(country, pattern = "[ .]*[uU]+[a-zA-Z.]* [sS]+[a-zA-Z]*[ .]*", "States"),
+         country = str_replace_all(country, pattern = "[ ]*[uU]+[ .!]*[sS]+[ .!]*[aA]*[ .!]*", "States"),
+         # the above changes austria and australia - watch out!
+         country = str_replace_all(country, pattern = "[uU]+[nN]+[a-z]* [sS]+[tT][aA][tT][a-z]* [oO]+[fF] [aA][mM][a-z]*\t*", "States"),
+         # there's still on "United States of America" which won't go - spaces?
+         country = str_replace_all(country, pattern = "^[mM][uU|eE][rR]+[iI][cC|kK][aA]", "States"),
         country = str_replace_all(country, pattern = "^[aA][mM][eE][rR][iI][cC][aA]", "States"),
         country = str_replace_all(country, pattern = "^\\'[mM][uU|eE][rR][iI][cC][aA]", "States"),
-        country = str_replace_all(country, pattern = "[sS][tT][aA][tT][eE][sS][!]", "States"),
-        country = str_replace_all(country, pattern = "[a-zA-Z]+ [-]+ [uU][sS][aA]", "States"), 
-        # the above only changed "the best one - usa" to "the best States" 
-        country = str_replace_all(country, pattern = "[of] [aA][merica]", ""),
-        # changes States of America to States oerica and i also have united states oerica
-        country = str_replace_all(country, pattern = "cascadia", "States"),
-        country = str_replace_all(country, pattern = "Narnia", "States"),
-        country = str_replace_all(country, pattern = "Sub-Canadian North America... 'Merica", "States"),
-        country = str_replace_all(country, pattern = "Trumpistan", "States"),
-        country = str_replace_all(country, pattern = "The republic of Cascadia", "States"),
-        country = str_replace_all(country, pattern = "unhinged ", ""),
-        country = str_replace_all(country, pattern = "North Carolina", "States"),
-        country = str_replace_all(country, pattern = "Pittsburgh", "States"),
-        country = str_replace_all(country, pattern = "New York", "States"),
+        country = str_replace_all(country, pattern = "[Tthe]*[ ]*[sS]+[tT][aA][tT][a-z]*[Ss][tT][a-z]*[Ss]*[tT]*[a-z]*[Ss]*[tT]*[a-z]*", "States"),
+          # removing States repeated
+        country = str_replace_all(country, pattern = "[Tt][a-z]* [bB][a-z]* [a-zA-Z]+ [-]+ [uU][sS][aA]", "States"),
+        # this was an attempt at "the best one - USA"
+        country = str_replace_all(country, pattern = "[nN][a-z]+ [cC|yY|jJ]+[a-z]*|[pP|tT]+[iI|rR]+[tT|uU]+[a-z]+|[cC][aA][lL][iI][a-z]*|[aA][lL][aA][a-z]*", "States"),
+        # The above is for "New York, North Carolina, New Jersey, Pittsburgh, Trumpistan, California, and Alaska (it also changed the end of New Zealand to New Zestates...)
         country = str_replace_all(country, pattern = "Ahem....Amerca", "States"),
-        country = str_replace_all(country, pattern = "UD", "States"),  
-        country = str_replace_all(country, pattern = "New Jersey", "States"),
-        country = str_replace_all(country, pattern = "Alaska", "States"),
-        country = str_replace_all(country, pattern = "N. America", "States"),
-        country = str_replace_all(country, pattern = "I don't know anymore", "States"),
-        country = str_replace_all(country, pattern = "!.*", ""),
-        country = str_replace_all(country, pattern = "States[sS|dD|aA]", "States"),
-        country = str_replace_all(country, pattern = "States oerica", "States"),
-        country = str_replace_all(country, pattern = "Statesof A", "States"),
-        country = str_replace_all(country, pattern = "United States", "States"),
-        country = str_replace_all(country, pattern = "The United States", "States"),
-        country = str_replace_all(country, pattern = "The States", "States"),
-        country = str_replace_all(country, pattern = "Statestates States", "States"),
-        country = str_replace_all(country, pattern = "Statestates States States", "States"),
-        country = str_replace_all(country, pattern = "Statestates", "States"),
-        country = str_replace_all(country, pattern = "States States", "States"),
-        country = str_replace_all(country, pattern = "^[uU]+[.]*[kK]+[.]*", "United Kingdom"),
-        country = str_replace_all(country, pattern = "^[uU][nited]+\\s[kK][iI][nN][dD][oO][mM]", "United Kingdom"),
-        country = str_replace_all(country, pattern = "^[uU][nN][iI][tT][eE][dD]+\\s[kK][iI][nN][gG][dD][oO][mM]", "United Kingdom"),
-        country = str_replace_all(country, pattern = "^[eE][nN][gG|dD][lL][aA][nN][dD]", "United Kingdom"),
-        country = str_replace_all(country, pattern = "Scotland", "United Kingdom"),
-        country = str_replace_all(country, pattern = "^[cC][a-zA-Z]{5}", "Canada"),
-        country = str_replace_all(country, pattern = "^[cC]+[aA]+[nN]+[aA]+[dD]+[aA]+[aA|iI|rR]*[aA|nN]*[iI]*[aA]*", "Canada"),
-        country = str_replace_all(country, pattern = "Canae", "Canada"),
-        country = str_replace_all(country, pattern = "^Canada`", "Canada"),
-        country = str_replace_all(country, pattern = "soviet canuckistan`", "Canada")
-      
-        )
+        country = str_replace_all(country, pattern = "^[cC]+[aA]+[nN]+[aA]+[dD|eE]+[aA]*[aA|iI|rR]*[aA|nN]*[iI]*[aA]*[`]*|[s][o][v][a-z]* [cC][a-z]*", "Canada"),
+        country = str_replace_all(country, pattern = "^[eE]+[nN]+[a-zA-Z]*|^[sS]+[cC]+[a-zA-Z]*|[uU]+[nN]+[a-zA-Z]* [kK]+[a-zA-Z]*", "United Kingdom"),
+        country = str_replace_all(country, pattern = "^[eE]+[nN]+[a-zA-Z]*|^[sS]+[cC]+[a-zA-Z]*|[uU]+[nN]+[a-zA-Z]* [kK]+[.]*[a-zA-Z]*|[uU]+[.]*[kK]+[.]*", "United Kingdom")
+                  )
 
 bound_country_clean %>% 
   distinct(country)
-view(bound_country_clean)
-```            
 
-Still and issue:
-# States? Hard to tell anymore..
-# one "United States" not changing (probably spaces issue??)
-# States (I think but it's an election year so who can really tell)
-# I pretend to be from Canada, but I am really from the United States.
-# there isn't one for old men
-# one of ones		(previously "one of the good ones"?)
-# The Yoo Essaayyyyyy
-# this one
-# neverland 
-# somewhere
-# god's country 
-# EUA
-# See above
-# Not the or Canada (previously not the US or canada)
-# Denial 
-# Earth 
-# insanity lately 
-# A 
-# Can 
-# Atlantis
-# Narnia
-# 1 
-# subscribe to dm4uz3 on youtube		
-# Fear and Loathing
+# view(bound_country_clean)
+          
+```
+
+ Other Countries: 
+ Germany
+ germany
+ AStates (Australia)
+ aStates (australia)
+ Statesa (Austria)
+ Japan 
+ Mexico 
+ Netherlands
+ The Netherlands
+ netherlands
+ Sweden
+ belgium
+ Ireland 
+ New ZeStates (New Zealand)
+ Switzerland
+ China
+ France
+ france
+ Denmark
+ Korea
+ South Korea
+ Brasil	
+ cascadia
+ Cascadia
+ Costa Rica
+ croatia
+ españa
+ spain
+South africa
+Europe	
+ Finland	
+finland
+Greece
+hong kong
+Hong Kong	
+hungary
+Iceland
+Indonesia
+kenya
+Not theStatesor Canada
+Panama
+Philippines
+Portugal
+Singapore
+sweden
+Taiwan
+UAE
+
+Strange / tricky States ones I didn't get to: 
+Can
+ Statesof A
+ Sub-Canadian North America... 'Merica
+ TheStates
+ 1
+ A
+ A tropical island south of the equator
+ Atlantis
+ Denial
+ Earth
+ EUA
+Fear and Loathing
+I don't know anymore
+god's country
+insanity lately
+N. America (the state is in canada)	
+I pretend to be from Canada, but I am really from theStates
+Narnia
+Neverland
+one of the best ones
+See above
+Somewhere
+States(I think but it's an election year so who can really tell)
+States? Hard to tell anymore.
+Statess
+subscribe to dm4uz3 on youtube
+the best one -States
+The republic of Cascadia (this is half States half Canada)
+The States
+The Yoo Ess of Aaayyyyyy
+there isn't one for old men
+this one
+UD
+United States of America
 
 
+
+**For the next three questions, count despair as -1, joy as +1, and meh as 0.**
+ 
+- Needing to pivot again so can create a new column with ratings as numbers
+- I couldn't quite get if_else to work so went with case_when and turned the 
+  column numeric 
+
+```{r}
+
+candy_pivot_ratings <- bound_country_clean %>% 
+  select(-c(id_number, 
+            age, 
+            trick_or_treating, 
+            state_or_prov)) %>% 
+  pivot_longer(butterfinger:take_5, 
+               names_to = "candy", 
+               values_to = "rating") %>% 
+  mutate(ratings_numeric = case_when(rating == "JOY" ~ 1, 
+                                     rating == "DESPAIR" ~ -1,
+                                     rating == "MEH" ~ 0)
+         )
+candy_pivot_ratings
+
+#view(candy_pivot_ratings)
+
+```
+
+
+**QUESTION SIX** 
+**What was the most popular candy bar by this rating system for each gender in**
+**the dataset?**
+
+* I first looked at the Females (there are: Females, Males, Other, and I'd rather
+  not say) and grouped them by candy. 
+* I tried to find the sum of the numeric ratings but this gave me NA values for
+  everything. 
+* So I decided to compare the mean score for each candy. 
+* Repeated the process for each of the other 3 categories of gender with group_by
+  gender (I could not seem to group by gender earlier)
+  
+**ANSWER**
+The most popular candy bar for all four groups was "any full sized candy bar". 
+But, as decided in a previous question, this seems too generic so I would suggest
+the following top results:
+* "Female": Reese's Peanut Butter Cups.
+* "Male":  also Reese's Peanut Butter Cups.
+* "Other": Twix
+* "I'd rather not say": Kit-Kat
+```{r}
+
+candy_pivot_ratings %>% 
+  filter(gender == "Female") %>% 
+  group_by(candy) %>% 
+  summarise(rating_count = mean(ratings_numeric, na.rm = TRUE)) %>% 
+  arrange(desc(rating_count)) 
+
+
+candy_pivot_ratings %>% 
+  group_by(gender, candy) %>% 
+  summarise(rating_count = mean(ratings_numeric, na.rm = TRUE)) %>% 
+  arrange(desc(rating_count)) 
+
+```
+
+**QUESTION SEVEN** 
+**What was the most popular candy bar in each year?**
+
+* Similar to questions six, the data was grouped by "year" and by "candy" before
+  finding the top average score for each year. 
+  
+**ANSWER**
+* Again, the same "full sized candy bar" arguement re: it's too generic means that
+  the most popular candy bar in each year was:
+  * 2015: Reese's Peanut Butter Cups.
+  * 2016: Kit-Kat.
+  * 2017: Reese's Peanut Butter Cups.
+
+```{r}
+
+candy_pivot_ratings %>% 
+  group_by(year, candy) %>% 
+  summarise(rating_count = mean(ratings_numeric, na.rm = TRUE)) %>% 
+  arrange(desc(rating_count))
+  
+```
+
+**QUESTION EIGHT** 
+**What was the most popular candy bar by this rating for people in US, Canada,** 
+**UK, and all other countries?**
+
+* Cleaning of country data as described above
+* Similar to questions six and seven, data was grouped by candy (however, again
+  it wouldn't filter nicely so I filtered by each of the countries in question 
+  first).
+* The mean value for each candy was then calculated 
+
+**ANSWER**
+"Any full sized candy bar" was ignored again due to being too generic, therefore
+each countries most popular candy was: 
+
+United States: Reese's peanut butter cups
+Canada: Kit-Kat
+UK: Rolos
+The rest of the world: Kit-Kat
+
+```{r}
+
+rest_of_the_world <- c("Germany", "germany", "AStates", "aStates", "Statesa", 
+                       "Japan", "Mexico", "Netherlands", "netherlands", "The Netherlands",
+                       "Sweden", "Belgium", "Ireland", "New ZeStates", "Switzerland",
+                       "China", "France", "france", "Denmark", "Korea", "South Korea",
+                       "Brasil", "cascadia", "Cascadia", "Costa Rica", "croatia", 
+                       "españa", "spain", "South africa", "Europe", "Finland", 
+                       "finland", "Greece", "hong kong", "Hong Kong", "hungary",
+                       "Iceland", "Indonesia", "kenya", "Not theStatesor Canada",
+                       "Panama", "Philippines", "Portugal", "Singapore", "sweden",
+                       "Taiwan", "UAE")
+
+unknown_country <- c("Can", "Statesof A","Sub-Canadian North America...", "'Merica",
+                     "TheStates", "1", "A", "A tropical island south of the equator", 
+                     "Atlantis", "Denial", "Earth", "EUA", "Fear and Loathing", 
+                     "I don't know anymore", "god's country", "insanity lately", 
+                     "N. America", "I pretend to be from Canada, but I am really 
+                     from theStates", "Narnia", "Neverland", "one of the best ones",
+                     "See above", "Somewhere", "States(I think but it's an election 
+                     year so who can really tell)", "States? Hard to tell anymore.",
+                     "Statess", "subscribe to dm4uz3 on youtube", "the best one -States",
+                     "The republic of Cascadia", "The States", "The Yoo Ess of Aaayyyyyy",
+                     "there isn't one for old men", "this one", "UD", 
+                     "United States of America")
+
+candy_pivot_ratings_country <- candy_pivot_ratings %>% 
+  mutate(country = if_else(country %in% rest_of_the_world, "Other", country),
+                   if_else(country %in% unknown_country, as.character(NA), country))
+candy_pivot_ratings_country %>% 
+  distinct(country)
+# still have 40 different "countries"
+  
+  
+candy_pivot_ratings_country %>% 
+  filter(country == "States") %>% 
+  group_by(candy) %>%
+  summarise(rating_count = mean(ratings_numeric, na.rm = TRUE)) %>% 
+  arrange(desc(rating_count))
+
+candy_pivot_ratings_country %>% 
+  filter(country == "Canada") %>% 
+  group_by(candy) %>%
+  summarise(rating_count = mean(ratings_numeric, na.rm = TRUE)) %>% 
+  arrange(desc(rating_count))
+
+candy_pivot_ratings_country %>% 
+  filter(country == "United Kingdom") %>% 
+  group_by(candy) %>%
+  summarise(rating_count = mean(ratings_numeric, na.rm = TRUE)) %>% 
+  arrange(desc(rating_count))
+
+candy_pivot_ratings_country %>% 
+  filter(country == "Other") %>% 
+  group_by(candy) %>%
+  summarise(rating_count = mean(ratings_numeric, na.rm = TRUE)) %>% 
+  arrange(desc(rating_count))
+```
