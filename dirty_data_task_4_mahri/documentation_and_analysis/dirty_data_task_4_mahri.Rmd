@@ -48,25 +48,60 @@ just looking at who is reporting back about these ones...
 
 janitor_candy_2017 %>% 
   select(q3_age, q2_gender, q6_independent_m_ms, q6_green_party_m_ms)
-
+# all types of people
 janitor_candy_2016 %>% 
   select(york_peppermint_patties_ignore)
 #nobody 
 ```
 
+**REMOVE AND RENAME** 
 
-2015 clean - remove columns that aren't candy (see readme) I went from bottom to
-top to check index as i went
-Also adding a "year" column and removing "timestamp" for the join (see if can work 
-out extracting year from timestamp and moving over later). Doing this after so that 
-column index isn't ruined 
+Step 1 - Remove and add for each year
+
+- For each of the three years, I removed columns that weren't candy having 
+ searched the internet to check on those I was not sure of. I also looked into
+ responses for a few of the columns (e.g. different m&ms colors) to see if there
+ were mostly joke responses/ any reason for me to join them together (I kept
+ them as is excpet for changing some names to make it clearer to me what they 
+ were - e.g. party bag of m&ms)
+- I removed columns by index from last position to first so that I could check 
+ that I didn't remove the wrong columns/ affect the order as I went.
+- Also adding a "year" column and removing "timestamp" from 2015 and 2016 
+ for referencing the correct years after binding the rows of all three together
+ (see if can work out extracting year from timestamp and moving over later). 
+ Adding this after so that column index isn't ruined.
+- Added a personal ID number just to try different ways of adding/ mutating
+ columns. (note - went to base R to do this for 2016 & 17)
+- I probably didn't have to remove all of this (depending on question and outcome) 
+but I like that it gives me less to work with.
+
+Step 2 - RENAME FOR EACH YEAR
+
+- Renaming columns so they match other years when binding rows. 
+- Considered merging the 2015 and 2016 "anonymous brown globs etc." columns with 
+ their "Mary Janes" columns because in 2017 it is recorded as "anon brown... aka 
+ Mary Janes"). But from looking at individuals responses, they don't match up so 
+ I'll leave as "anonymous_black_and_orange_wrapper" and "mary_janes".
+
+
+2015 REMOVE AND ADD 
+
 ```{r}
-names(janitor_candy_2015)
+# names(janitor_candy_2015)
 
 col_removed_candy_2015 <- janitor_candy_2015 %>% 
-  select(-c(116:124), -c(97:113), -c(93:95), -c(90, 91), -c(peterson_brand_sidewalk_chalk, spotted_dick, mint_leaves, joy_joy_mit_iodine, minibags_of_chips, lapel_pins, kale_smoothie, hugs_actual_physical_hugs, heath_bar, healthy_fruit, creepy_religious_comics_chick_tracts, broken_glow_stick, glow_sticks, generic_brand_acetaminophen, dental_paraphenalia, cash_or_other_forms_of_legal_tender, vials_of_pure_high_fructose_corn_syrup_for_main_lining_into_your_vein, box_o_raisins, timestamp)) %>% 
-  add_column(year = "2015", .before = 1)
-  
+  select(-c(116:124), -c(97:113), -c(93:95), -c(90, 91), 
+         -c(peterson_brand_sidewalk_chalk, spotted_dick, mint_leaves, 
+            joy_joy_mit_iodine, minibags_of_chips, lapel_pins, kale_smoothie, 
+            hugs_actual_physical_hugs, heath_bar, healthy_fruit, 
+            creepy_religious_comics_chick_tracts, broken_glow_stick, 
+            glow_sticks, generic_brand_acetaminophen, dental_paraphenalia, 
+            cash_or_other_forms_of_legal_tender,
+            vials_of_pure_high_fructose_corn_syrup_for_main_lining_into_your_vein, 
+            box_o_raisins, timestamp)) %>% 
+  add_column(year = "2015", .before = 1) %>% 
+  mutate(id_number = row_number(), .before = 2)
+
 
 col_removed_candy_2015
 #view(col_removed_candy_2015)
@@ -74,69 +109,158 @@ col_removed_candy_2015
 
 ```
 
-2015 clean - renaming columns so they match other years
-considered merging anonymous brown globs with mary janes (in 2017 it is "anon 
-brown... aka Mary Janes") but looking at responses, they don't match up so I'll 
-leave as anonymous_black_and_orange_wrappers...
+
+
+2015 RENAME
 ```{r}
-col_removed_candy_2015 %>% 
-  select(anonymous_brown_globs_that_come_in_black_and_orange_wrappers, mary_janes)
+# Looking at differences between responses for Mary Janes thoughts
+
+# col_removed_candy_2015 %>% 
+#  select(anonymous_brown_globs_that_come_in_black_and_orange_wrappers, mary_janes)
 
 candy_2015_renamed <- col_removed_candy_2015 %>% 
-  rename(age = how_old_are_you, trick_or_treating = are_you_going_actually_going_trick_or_treating_yourself, anonymous_black_and_orange_wrapper = anonymous_brown_globs_that_come_in_black_and_orange_wrappers, brach_not_including_candy_corn = brach_products_not_including_candy_corn, restaurant_candy = candy_that_is_clearly_just_the_stuff_given_out_for_free_at_restaurants, hersheys_dark_chocolate = dark_chocolate_hershey, gummy_bears = gummy_bears_straight_up, hersheys_kissables = hershey_s_kissables, hersheys_milk_chocolate = hershey_s_milk_chocolate, licorice_black = licorice, reeses_peanut_butter_cups = reese_s_peanut_butter_cups, toblerone = tolberone_something_or_other, peanut_m_ms = peanut_m_m_s, chick_o_stick = chick_o_sticks_we_don_t_know_what_that_is, circus_peanuts = those_odd_marshmallow_circus_peanut_things, sea_salt_chocolate = sea_salt_flavored_stuff_probably_chocolate_since_this_is_the_it_flavor_of_the_year)
+  rename(age = how_old_are_you, 
+         trick_or_treating = are_you_going_actually_going_trick_or_treating_yourself,
+         anonymous_black_and_orange_wrapper = 
+           anonymous_brown_globs_that_come_in_black_and_orange_wrappers, 
+         brach_not_including_candy_corn = brach_products_not_including_candy_corn, 
+         restaurant_candy = 
+           candy_that_is_clearly_just_the_stuff_given_out_for_free_at_restaurants, 
+         hersheys_dark_chocolate = dark_chocolate_hershey, 
+         gummy_bears = gummy_bears_straight_up, 
+         hersheys_kissables = hershey_s_kissables, 
+         hersheys_milk_chocolate = hershey_s_milk_chocolate, 
+         licorice_black = licorice, 
+         reeses_peanut_butter_cups = reese_s_peanut_butter_cups, 
+         toblerone = tolberone_something_or_other, 
+         peanut_m_ms = peanut_m_m_s, 
+         chick_o_stick = chick_o_sticks_we_don_t_know_what_that_is, 
+         circus_peanuts = those_odd_marshmallow_circus_peanut_things, 
+         sea_salt_chocolate = 
+           sea_salt_flavored_stuff_probably_chocolate_since_this_is_the_it_flavor_of_the_year)
 
 ```
 
 
-2016 clean - remove unnecessary columns - bottom to top
-Also adding a year column for the binding of rows
+2016 - REMOVE AND ADD 
+
 ```{r}
 col_removed_candy_2016 <- janitor_candy_2016 %>% 
-
-  select(-c(104, 105, 107:123), -c(vicodin, vials_of_pure_high_fructose_corn_syrup_for_main_lining_into_your_vein, trail_mix, spotted_dick, person_of_interest_season_3_dvd_box_set_not_including_disc_4_with_hilarious_outtakes, minibags_of_chips, kale_smoothie, joy_joy_mit_iodine, hugs_actual_physical_hugs, heath_bar, healthy_fruit, glow_sticks, generic_brand_acetaminophen, dental_paraphenalia, creepy_religious_comics_chick_tracts, chardonnay, cash_or_other_forms_of_legal_tender, broken_glow_stick, boxo_raisins, bonkers_the_board_game, timestamp)) %>% 
-  add_column(year = "2016", .before = 1)
-
-
+  select(-c(104, 105, 107:123), 
+         -c(vicodin, vials_of_pure_high_fructose_corn_syrup_for_main_lining_into_your_vein, 
+            trail_mix, spotted_dick,
+            person_of_interest_season_3_dvd_box_set_not_including_disc_4_with_hilarious_outtakes,
+            minibags_of_chips, kale_smoothie, joy_joy_mit_iodine, hugs_actual_physical_hugs, 
+            heath_bar, healthy_fruit, glow_sticks, generic_brand_acetaminophen, 
+            dental_paraphenalia, creepy_religious_comics_chick_tracts, chardonnay,
+            cash_or_other_forms_of_legal_tender, broken_glow_stick, boxo_raisins, 
+            bonkers_the_board_game, timestamp)) %>% 
+  add_column(year = "2016", .before = 1) %>% 
+  mutate(id_number = max(candy_2015_renamed$id_number) + row_number(), .before = 2)
+col_removed_candy_2016 
 ```
 
-2016 - rename so they match other sheets
-considered merging anonymous brown globs with mary janes (in 2017 it is "anon 
-brown... aka Mary Janes") but looking at responses, they don't match up so I'll 
-leave as anonymous_black_and_orange_wrappers...
-```{r}
+2016 RENAME
 
-col_removed_candy_2016 %>% 
-  select(anonymous_brown_globs_that_come_in_black_and_orange_wrappers, mary_janes)
+```{r}
+# Again checking on Mary Janes column differences 
+# col_removed_candy_2016 %>% 
+#   select(anonymous_brown_globs_that_come_in_black_and_orange_wrappers, mary_janes)
 
 candy_2016_renamed <- col_removed_candy_2016 %>% 
-  rename(trick_or_treating = are_you_going_actually_going_trick_or_treating_yourself, gender = your_gender, age = how_old_are_you, country = which_country_do_you_live_in, state_or_prov = which_state_province_county_do_you_live_in, anonymous_black_and_orange_wrapper = anonymous_brown_globs_that_come_in_black_and_orange_wrappers, bonkers = bonkers_the_candy, restaurant_candy = candy_that_is_clearly_just_the_stuff_given_out_for_free_at_restaurants, chick_o_stick = chick_o_sticks_we_don_t_know_what_that_is, gummy_bears = gummy_bears_straight_up, hersheys_milk_chocolate = hershey_s_milk_chocolate, licorice_black = licorice_yes_black, peanut_m_ms = peanut_m_m_s, party_bag_m_ms = third_party_m_ms, reeses_peanut_butter_cups = reese_s_peanut_butter_cups, sourpatch_kids = sourpatch_kids_i_e_abominations_of_nature, sweetarts = sweet_tarts, sweetums = sweetums_a_friend_to_diabetes, circus_peanuts = those_odd_marshmallow_circus_peanut_things, toblerone = tolberone_something_or_other)
+  rename(trick_or_treating = 
+           are_you_going_actually_going_trick_or_treating_yourself, 
+         gender = your_gender, 
+         age = how_old_are_you, 
+         country = which_country_do_you_live_in, 
+         state_or_prov = which_state_province_county_do_you_live_in, 
+         anonymous_black_and_orange_wrapper = 
+           anonymous_brown_globs_that_come_in_black_and_orange_wrappers, 
+         bonkers = bonkers_the_candy, 
+         restaurant_candy = 
+           candy_that_is_clearly_just_the_stuff_given_out_for_free_at_restaurants, 
+         chick_o_stick = chick_o_sticks_we_don_t_know_what_that_is, 
+         gummy_bears = gummy_bears_straight_up, 
+         hersheys_milk_chocolate = hershey_s_milk_chocolate, 
+         licorice_black = licorice_yes_black, 
+         peanut_m_ms = peanut_m_m_s, 
+         party_bag_m_ms = third_party_m_ms, 
+         reeses_peanut_butter_cups = reese_s_peanut_butter_cups, 
+         sourpatch_kids = sourpatch_kids_i_e_abominations_of_nature, 
+         sweetarts = sweet_tarts, 
+         sweetums = sweetums_a_friend_to_diabetes, 
+         circus_peanuts = those_odd_marshmallow_circus_peanut_things, 
+         toblerone = tolberone_something_or_other)
 
 candy_2016_renamed
 
 ```
 
 
-2017 clean - remove those not candy and internal id as others don't have
-Also adding a year column for the join
+2017 CLEAN AND ADD
+Note - should have removed the "q6_" before this, but have done so in the next 
+chunk 
+
 ```{r}
 col_removed_candy_2017 <- janitor_candy_2017 %>%  
-  select(-c(102, 104, 105, 107, 108, 110:120), -c(q6_spotted_dick, q6_sandwich_sized_bags_filled_with_boo_berry_crunch, q6_real_housewives_of_orange_county_season_9_blue_ray, q6_minibags_of_chips, q6_abstained_from_m_ming, q6_kale_smoothie, q6_joy_joy_mit_iodine, q6_hugs_actual_physical_hugs, q6_heath_bar, q6_healthy_fruit, q6_glow_sticks, q6_generic_brand_acetaminophen, q6_dental_paraphenalia, q6_creepy_religious_comics_chick_tracts, q6_chardonnay, q6_cash_or_other_forms_of_legal_tender, q6_broken_glow_stick, q6_boxo_raisins, q6_bonkers_the_board_game, internal_id)) %>% 
-  add_column(year = "2017", .before = 1)
+  select(-c(102, 104, 105, 107, 108, 110:120), 
+         -c(q6_spotted_dick, 
+            q6_sandwich_sized_bags_filled_with_boo_berry_crunch,
+            q6_real_housewives_of_orange_county_season_9_blue_ray, 
+            q6_minibags_of_chips, 
+            q6_abstained_from_m_ming, 
+            q6_kale_smoothie, q6_joy_joy_mit_iodine, 
+            q6_hugs_actual_physical_hugs, 
+            q6_heath_bar, 
+            q6_healthy_fruit, 
+            q6_glow_sticks, 
+            q6_generic_brand_acetaminophen, 
+            q6_dental_paraphenalia, 
+            q6_creepy_religious_comics_chick_tracts, 
+            q6_chardonnay, 
+            q6_cash_or_other_forms_of_legal_tender, 
+            q6_broken_glow_stick, 
+            q6_boxo_raisins, 
+            q6_bonkers_the_board_game, 
+            internal_id)) %>% 
+  add_column(year = "2017", .before = 1) %>% 
+  mutate(id_number = max(candy_2016_renamed$id_number) + row_number(), .before = 2)
 
 col_removed_candy_2017
 ```
 
-2017 - rename - get rid of q1/2/3/4/5/6 at the start of col names
+2017 RENAME - get rid of "q1/2/3/4/5/6" at the start of col names
 and rename to match 2015 and 16
 
 ```{r}
 
 candy_2017_q_removed <- col_removed_candy_2017 %>% 
-  rename_all(~ sub("^[a-z0-9]{2}_", "", 
+  rename_all(~ sub("^[q0-9]{2}_", "", 
                    make.names(names(col_removed_candy_2017))))
 
+
 candy_2017_renamed <- candy_2017_q_removed %>% 
-  rename(trick_or_treating = going_out, state_or_prov = state_province_county_etc, x100_grand_bar = `100_grand_bar`, mary_janes = anonymous_brown_globs_that_come_in_black_and_orange_wrappers_a_k_a_mary_janes, bonkers = bonkers_the_candy, restaurant_candy = candy_that_is_clearly_just_the_stuff_given_out_for_free_at_restaurants, chick_o_stick = chick_o_sticks_we_don_t_know_what_that_is, gummy_bears = gummy_bears_straight_up, hersheys_milk_chocolate = hershey_s_milk_chocolate, licorice_black = licorice_yes_black, peanut_m_ms = peanut_m_m_s, green_m_ms = green_party_m_ms, lone_m_ms = independent_m_ms, reeses_peanut_butter_cups = reese_s_peanut_butter_cups, sourpatch_kids = sourpatch_kids_i_e_abominations_of_nature, sweetarts = sweet_tarts, sweetums = sweetums_a_friend_to_diabetes, circus_peanuts = those_odd_marshmallow_circus_peanut_things, toblerone = tolberone_something_or_other)
+  rename(trick_or_treating = going_out, 
+         state_or_prov = state_province_county_etc, 
+         x100_grand_bar = `100_grand_bar`, 
+         mary_janes = 
+           anonymous_brown_globs_that_come_in_black_and_orange_wrappers_a_k_a_mary_janes, 
+         bonkers = bonkers_the_candy, 
+         restaurant_candy = 
+           candy_that_is_clearly_just_the_stuff_given_out_for_free_at_restaurants, 
+         chick_o_stick = chick_o_sticks_we_don_t_know_what_that_is, 
+         gummy_bears = gummy_bears_straight_up, 
+         hersheys_milk_chocolate = hershey_s_milk_chocolate, 
+         licorice_black = licorice_yes_black, 
+         peanut_m_ms = peanut_m_m_s, 
+         green_m_ms = green_party_m_ms, 
+         lone_m_ms = independent_m_ms, 
+         reeses_peanut_butter_cups = reese_s_peanut_butter_cups, 
+         sourpatch_kids = sourpatch_kids_i_e_abominations_of_nature, 
+         sweetarts = sweet_tarts, 
+         sweetums = sweetums_a_friend_to_diabetes, 
+         circus_peanuts = those_odd_marshmallow_circus_peanut_things, 
+         toblerone = tolberone_something_or_other)
   
 candy_2017_renamed
 ```
@@ -152,151 +276,307 @@ view(candy_2017_renamed)
 Getting an idea of people's responses: 
 ```{r}
 
-distinct(candy_2015_renamed, age) #(chr...) 146 responses, some silly and some strange
-distinct(candy_2015_renamed, trick_or_treating) # yes or no (chr)
+distinct(candy_2015_renamed, age) 
+  #(chr) 146 responses, some silly and some strange
+distinct(candy_2015_renamed, trick_or_treating) 
+  #(chr) yes or no (NAs in 2017)
 distinct(candy_2015_renamed, starburst)
 
 
-distinct(candy_2016_renamed, age) #chr 98 incl silly/strange
-distinct(candy_2016_renamed, trick_or_treating) #Yes No (chr)
-distinct(candy_2016_renamed, gender) #Male, Female, Other, I'd rather not say, NA
-distinct(candy_2016_renamed, country) #93 some silly, some e.g. USA, US, us, u.s.a. etc 
+distinct(candy_2016_renamed, age) 
+  # (chr) 98 incl silly/strange
+distinct(candy_2016_renamed, trick_or_treating) 
+  #(chr) Yes No (NAs in 2017)
+distinct(candy_2016_renamed, gender) 
+  # Male, Female, Other, I'd rather not say, NA
+distinct(candy_2016_renamed, country) 
+  #93 some silly, some e.g. USA, US, us, u.s.a. etc 
 distinct(candy_2016_renamed, starburst)
 
 
-distinct(candy_2017_renamed, age) #chr 107 incl silly/strange
-distinct(candy_2017_renamed, trick_or_treating) #Yes No and NA(chr)
-distinct(candy_2017_renamed, gender) #Male, Female, Other, I'd rather not say, NA
-distinct(candy_2017_renamed, country) #118 some silly, some e.g. USA, US, us, u.s.a. etc 
+distinct(candy_2017_renamed, age) 
+  #(chr) 107 incl silly/strange
+distinct(candy_2017_renamed, trick_or_treating)
+  #(chr) Yes No and NA
+distinct(candy_2017_renamed, gender) 
+  #Male, Female, Other, I'd rather not say, NA
+distinct(candy_2017_renamed, country) 
+  #118 some silly, some e.g. USA, US, us, u.s.a. etc 
 distinct(candy_2017_renamed, starburst)
 ```
 
 
-Join all three 
+Joining all three years by binding rows so as to keep everything
+
 ```{r}
-bound_candy <- bind_rows(candy_2015_renamed, candy_2016_renamed, candy_2017_renamed)
+bound_candy <- bind_rows(candy_2015_renamed, 
+                         candy_2016_renamed, 
+                         candy_2017_renamed)
 
 
 bound_candy <- bound_candy %>% 
-  relocate(country, .before = 4) %>% 
-  relocate(state_or_prov, .before = 5) %>% 
-  relocate(gender, .before = 6)
+  relocate(country, .before = 5) %>% 
+  relocate(state_or_prov, .before = 6) %>% 
+  relocate(gender, .before = 7)
 
 
-view(bound_candy)
+# view(bound_candy)
 ```
 
 
 
 
 
----------------- COUNTRY CLEANING -------------------------- 
+**QUESTION 1** 
+What is the total number of candy ratings given across the three years. 
+(Number of candy ratings, not the number of raters. Don’t count missing values)
 
-Note that 2015 (5630 rows of 9349) has no country data... 
+ANSWER - 590,010 ratings
+```{r}
 
-5715 rows in bound_candy has NA 
+total_ratings <- bound_candy %>% 
+  select(-c(year, id_number, age, 
+            trick_or_treating, country, 
+            state_or_prov, gender)) %>%
+  pivot_longer(butterfinger:take_5, 
+               names_to = "candy", 
+               values_to = "rating") %>% 
+  filter(!is.na(rating)) %>% 
+  count(n())
+total_ratings
+
+```
+
+
+
+
+**AGE CLEANING**
+Age is a character column with 274 values. They are numbers, NAs, and strange 
+and silly values 
+- changed age column to a numeric but it output strange figures, so I specified 
+  integer and strange answers became NAs. 
+- Seems unlikely that anyone > 100 years old is answering so I removed them
+
+```{r}
+# bound_candy %>% 
+#  distinct(age)
+
+bound_age_to_numeric <- bound_candy %>% 
+  mutate(age = as.integer(age)) %>% 
+  arrange(age)
+
+# bound_age_to_numeric %>% 
+# distinct(age)
+
+bound_age_cleaning <- bound_age_to_numeric %>%
+  mutate(age = if_else(age > 99, NA_integer_, age))
+bound_age_cleaning
+# view(bound_age_cleaning)
+```
+
+**QUESTION TWO**
+What was the average age of people who are going out trick or treating?
+
+I know the responses for trick or treating are "Yes" "No " and "NA"
+
+ANSWER - The (rounded) average age of those going trick or treating is 35
+years old (34.94897 is the unrounded value)
+
+```{r}
+
+
+bound_age_cleaning %>% 
+  select(age, trick_or_treating) %>% 
+  group_by(trick_or_treating) %>% 
+  summarise(average_age = round(mean(age, na.rm = TRUE)))
+
+# to just get the answer for Yes on it's own: 
+bound_age_cleaning %>% 
+  select(age, trick_or_treating) %>% 
+  group_by(trick_or_treating) %>% 
+  filter(trick_or_treating == "Yes") %>% 
+  summarise(average_age = round(mean(age, na.rm = TRUE)))
+    
+```
+
+**QUESTION THREE**
+What was the average age of people who are not going trick or treating?
+ANSWER - The (rounded) average age of those not going trick or treating is 39
+years old (39.10454 is the unrounded value)
+
+```{r}
+bound_age_cleaning %>% 
+  select(age, trick_or_treating) %>% 
+  group_by(trick_or_treating) %>% 
+  summarise(average_age = round(mean(age, na.rm = TRUE)))
+
+# to just get the answer for No on it's own: 
+bound_age_cleaning %>% 
+  select(age, trick_or_treating) %>% 
+  group_by(trick_or_treating) %>% 
+  filter(trick_or_treating == "No") %>% 
+  summarise(average_age = round(mean(age, na.rm = TRUE)))
+
+```
+
+**QUESTION FOUR** 
+**For each of joy, despair and meh, which candy bar revived the most of these** 
+**ratings?** 
+
+As in question 1, a 2 column tibble with candy and rating was created and a count
+of each distinct answer was made - firstly counting each for each response and 
+each candy, then filtering to find the maximum count for each rating. 
+
+ANSWER -  
+Despair: gum that comes with baseball cards returned the most despair responses
+          with 7,341
+Joy:Full sized candy bars made the most people joyful with 7,589 responses.
+    This seems very generic so I ran it again to remove the full sized candy
+    bars and the top Joy response was: 7369 responses for reeses peanut butter
+    cups
+Meh: 1,570 "Meh" responses were given for lollipops
+
+
+```{r}
+
+rated_candy <- bound_candy %>% 
+  select(-c(year, id_number, age, 
+            trick_or_treating, country, 
+            state_or_prov, gender, any_full_sized_candy_bar)) %>%
+  pivot_longer(butterfinger:take_5, 
+               names_to = "candy", 
+               values_to = "rating")
+rated_candy
+
+rated_candy %>% 
+  group_by(rating, candy) %>% 
+  summarise(number_of_ratings = n()) %>% 
+  filter(number_of_ratings == max(number_of_ratings))
+
+# run again removing generic "full sized candy bars"
+
+rated_candy <- bound_candy %>% 
+  select(-c(year, id_number, age, 
+            trick_or_treating, country, 
+            state_or_prov, gender, any_full_sized_candy_bar)) %>%
+  pivot_longer(butterfinger:take_5, 
+               names_to = "candy", 
+               values_to = "rating")
+rated_candy
+
+rated_candy %>% 
+  group_by(rating, candy) %>% 
+  summarise(number_of_ratings = n()) %>% 
+  filter(number_of_ratings == max(number_of_ratings))
+
+```
+
+
+**COUNTRY CLEANING** 
+
+Firstly getting an idea of NAs and distinct country values:
+
+- Note that 2015 (5630 rows of 9349) has no country data... (all NA)
+- 5715 rows in bound_candy has NA 
+
+- There are 169 distinct country names including NAs, miss-spellings, and silly/ 
+ unknown answers 
 
 ```{r}
 
 bound_candy %>% 
   filter(is.na(country))
-# 5715 rows in country are NA
 
 bound_candy %>% 
-  distinct(country)
-#169 country names including silly and miss-spelled 
+  distinct(country) 
 ```
 
 
+Using stringr and regex to reduce "country" values
+- For columns that were numbers or clearly fake (silly) answers, I checked 
+  the state or province column to see if there was a match to a country
+- I checked my work one row at a time to try and ensure I did not change 
+  anything that was not meant to be changed. 
+- I am sure there are faster/ better ways of doing this, but I was practicing
+  different options
+ 
 
 ```{r}
 library(stringr)
 
-
 ```
 
-
+country = str_replace_all(country, pattern = "[ ]*[uU]+[ .!]*[sS]+[ .!]*[aA]*[ .!]*", "States")
+tried this to change what was now States USA USA but it changed that to StatesStatesStates and also Australia to AStatestralia... 
 ```{r}
 bound_country_clean <- bound_candy %>% 
   mutate(country = str_replace_all(country, pattern = "[0-9][0-9][.][0-9]", "States"),
          country = str_replace_all(country, pattern = "[3|4|5][0-9]", "States"),
-         country = str_replace_all(country, pattern = "^[uU]+[sS]+[aA]+", "States"),
-         country = str_replace_all(country, pattern = "^[uU]\\.[sS]\\.[aA]\\.", "States"),
-         country = str_replace_all(country, pattern = "^[uU]\\s[sS]\\s[aA]", "States"),
-         country = str_replace_all(country, pattern = "^[uU]\\.[sS]\\.", "States"),
-         country = str_replace_all(country, pattern = "^[uU][sS]", "States"),
-         country = str_replace_all(country, pattern = "^[uU]\\s[sS]", "States"),
-         country = str_replace_all(country, pattern = "states", "States"),
-         country = str_replace_all(country, pattern = "Statess", "States"),
-         country = str_replace_all(country, pattern = "USSA", "States"),
-         country = str_replace_all(country, pattern = "^[uU][nN][iI][tT][eE][dD]+\\s[sS][tT][aA][tT][eE][sS]", "States"),
-         country = str_replace_all(country, pattern = "^[uU][nN][iI][tT][eE][dD]+\\s[sS][tT][aA][tT][eE]", "States"),
-        # the above doesn't work for all... i presume there are spaces somewhere
-        country = str_replace_all(country, pattern = "[uU][nN][iI][tT|eE][sS|dD]\\s[sS][tT][aA][tT][eE][sS]", "States"),
-        country = str_replace_all(country, pattern = "[uU][nN][iI][tT][eE][dD]\\s[sS][tT][eE|sS][tT][eE][sS]", "States"),
-        country = str_replace_all(country, pattern = "[uU][nN][iI][tT][eE][dD]\\s[sS][aA][tT][eE][sS]", "States"),
-        country = str_replace_all(country, pattern = "^[mM][uU|eE][rR][iI][cC][aA]", "States"),
+         country = str_replace_all(country, pattern = "^[ ]*[uU]+[ .!]*[sS]+[ .!]*[aA]*[ .!]*", "States"),
+         country = str_replace_all(country, pattern = "^[uU][nited]+\\s[sS][tT]*[aA|eE|sS][tT][eE][sS|aA]", "States"),
+         country = str_replace_all(country, pattern = "^[uU][nN][iI][tT][eE][dD|sS]+\\s[sS][tT][aA][tT][eE|sS][sS]*", "States"),
+         # the above doesn't work for all... i presume there are spaces somewhere
+         country = str_replace_all(country, pattern = "^[uU][nN][iI][tT][sS]+\\s[sS][tT][aA][tT][eE][sS]*", "States"),
+        country = str_replace_all(country, pattern = "[sS][tT][aA|eE][tT]*[eE][sS]*", "States"), 
+        
+         country = str_replace_all(country, pattern = "[uU]+[sS]+[aA]+", "States"),
+        country = str_replace_all(country, pattern = "^[mM][uU|eE][rR]+[iI][cC|kK][aA]", "States"),
         country = str_replace_all(country, pattern = "^[aA][mM][eE][rR][iI][cC][aA]", "States"),
         country = str_replace_all(country, pattern = "^\\'[mM][uU|eE][rR][iI][cC][aA]", "States"),
         country = str_replace_all(country, pattern = "[sS][tT][aA][tT][eE][sS][!]", "States"),
-        country = str_replace_all(country, pattern = "cascadia", "States"),
-        country = str_replace_all(country, pattern = "The republic of Cascadia", "States"),
-        #above cascadia doesn't work
-                country = str_replace_all(country, pattern = "the best ", ""),
-        country = str_replace_all(country, pattern = " of [aA]merica", ""),
-        country = str_replace_all(country, pattern = " USA USA USA", ""),
-        # how do i make it USA 1 to 3 times?
-        country = str_replace_all(country, pattern = " USA USA", ""),
-        country = str_replace_all(country, pattern = " USA", ""),
-         # the above made "not the USA or canada" into "not the or canada"
         country = str_replace_all(country, pattern = "[a-zA-Z]+ [-]+ [uU][sS][aA]", "States"), 
         # the above only changed "the best one - usa" to "the best States" 
+        country = str_replace_all(country, pattern = "[of] [aA][merica]", ""),
+        # changes States of America to States oerica and i also have united states oerica
+        country = str_replace_all(country, pattern = "cascadia", "States"),
+        country = str_replace_all(country, pattern = "Narnia", "States"),
         country = str_replace_all(country, pattern = "Sub-Canadian North America... 'Merica", "States"),
+        country = str_replace_all(country, pattern = "Trumpistan", "States"),
+        country = str_replace_all(country, pattern = "The republic of Cascadia", "States"),
         country = str_replace_all(country, pattern = "unhinged ", ""),
-        country = str_replace_all(country, pattern = " of A", ""),
-        country = str_replace_all(country, pattern = "unite States", "States"),
-        country = str_replace_all(country, pattern = "The United [sS]", "S"),
         country = str_replace_all(country, pattern = "North Carolina", "States"),
         country = str_replace_all(country, pattern = "Pittsburgh", "States"),
         country = str_replace_all(country, pattern = "New York", "States"),
-        country = str_replace_all(country, pattern = "Trumpistan", "States"),
-        country = str_replace_all(country, pattern = "UD", "States"),
+        country = str_replace_all(country, pattern = "Ahem....Amerca", "States"),
+        country = str_replace_all(country, pattern = "UD", "States"),  
         country = str_replace_all(country, pattern = "New Jersey", "States"),
-        country = str_replace_all(country, pattern = "murrika", "States"),
         country = str_replace_all(country, pattern = "Alaska", "States"),
         country = str_replace_all(country, pattern = "N. America", "States"),
         country = str_replace_all(country, pattern = "I don't know anymore", "States"),
-        country = str_replace_all(country, pattern = "States[sS|dD|aA]", "States"),
         country = str_replace_all(country, pattern = "!.*", ""),
-        # this got rid of lots but "USA! USA! USA!" is now "StatesUSAUSA"
-        country = str_replace_all(country, pattern = "StatesUSAUSA", "States"),
-        country = str_replace_all(country, pattern = "^[uU][nN][iI][tT][eE][a-zA-Z]+\\s[sS][tT][aA][tT|eE][eE|sS]", "States"),
-        country = str_replace_all(country, pattern = "^[uU][kK]", "United Kingdom"),
-        country = str_replace_all(country, pattern = "^[uU][.]*[kK][.]*", "United Kingdom"),
-        country = str_replace_all(country, pattern = "^[uU][nN][iI][tT][eE][dD]+\\s[kK][iI][nN][dD][oO][mM]", "United Kingdom"),
+        country = str_replace_all(country, pattern = "States[sS|dD|aA]", "States"),
+        country = str_replace_all(country, pattern = "States oerica", "States"),
+        country = str_replace_all(country, pattern = "Statesof A", "States"),
+        country = str_replace_all(country, pattern = "United States", "States"),
+        country = str_replace_all(country, pattern = "The United States", "States"),
+        country = str_replace_all(country, pattern = "The States", "States"),
+        country = str_replace_all(country, pattern = "Statestates States", "States"),
+        country = str_replace_all(country, pattern = "Statestates States States", "States"),
+        country = str_replace_all(country, pattern = "Statestates", "States"),
+        country = str_replace_all(country, pattern = "States States", "States"),
+        country = str_replace_all(country, pattern = "^[uU]+[.]*[kK]+[.]*", "United Kingdom"),
+        country = str_replace_all(country, pattern = "^[uU][nited]+\\s[kK][iI][nN][dD][oO][mM]", "United Kingdom"),
         country = str_replace_all(country, pattern = "^[uU][nN][iI][tT][eE][dD]+\\s[kK][iI][nN][gG][dD][oO][mM]", "United Kingdom"),
         country = str_replace_all(country, pattern = "^[eE][nN][gG|dD][lL][aA][nN][dD]", "United Kingdom"),
         country = str_replace_all(country, pattern = "Scotland", "United Kingdom"),
         country = str_replace_all(country, pattern = "^[cC][a-zA-Z]{5}", "Canada"),
-        country = str_replace_all(country, pattern = "^[cC][a-zA-Z]{5}rnia", "Canada"),
-        country = str_replace_all(country, pattern = "^[cC][a-zA-Z]{5}ia", "Canada"),
+        country = str_replace_all(country, pattern = "^[cC]+[aA]+[nN]+[aA]+[dD]+[aA]+[aA|iI|rR]*[aA|nN]*[iI]*[aA]*", "Canada"),
+        country = str_replace_all(country, pattern = "Canae", "Canada"),
         country = str_replace_all(country, pattern = "^Canada`", "Canada"),
-        country = str_replace_all(country, pattern = "soviet canuckistan`", "Canada"),
-        country = str_replace_all(country, pattern = "^Canadaa", "Canada") 
-        
+        country = str_replace_all(country, pattern = "soviet canuckistan`", "Canada")
+      
         )
 
 bound_country_clean %>% 
   distinct(country)
+view(bound_country_clean)
+```            
 
-# view(bound_country_clean)
-
-# still and issue:
+Still and issue:
 # States? Hard to tell anymore..
 # one "United States" not changing (probably spaces issue??)
 # States (I think but it's an election year so who can really tell)
 # I pretend to be from Canada, but I am really from the United States.
-# Ahem....Amerca
 # there isn't one for old men
 # one of ones		(previously "one of the good ones"?)
 # The Yoo Essaayyyyyy
@@ -312,101 +592,10 @@ bound_country_clean %>%
 # insanity lately 
 # A 
 # Can 
-# Canae
 # Atlantis
 # Narnia
 # 1 
 # subscribe to dm4uz3 on youtube		
 # Fear and Loathing
 
-```
-
-
-
-2016 testing
-
-```{r}
-# testing 
-
- # mutate(
-  #   country = str_replace_all(country, pattern = "[U][S][A][!]\\s[U][S][A][!]\\s[U][S][A][!]", "States"),
-         # didn't work... try again below
-
-        # country = str_replace_all(country, pattern = "[ *][uU][nN][iI][tT][eD]\\s[sS][tT][aA][tT][eE][sS]\\s[oO][fF]\\s[aA][mM][eE][rR][iI][cC][aA][ *]", "America"),
-         # united states of america still not working, i presume there are spaces... 
-        
-        # country = str_replace_all(country, pattern = "^\\s*[uU][nN][iI][tT][eE][dD]+\\s[sS][tT][aA][tT][eE][sS]\\s*", "States"),
-        #country = str_replace_all(country, pattern = "^[ ]*[uU][nN][iI][tT][eE][dD]+\\s[sS][tT][aA][tT][eE][sS][ ]*", "States"),
-        
-        
-        
-  #  country = str_replace_all(country, pattern = "!.*", ""),
-         #the ! arguement isn't working! still get e.g. USA! USA! USA! as 
-         #States! USA! USA!" 
-        # country = str_replace_all(country, pattern = "^.*[!].*", "States"),
-         #country = str_replace_all(country, pattern = "^[Uu]+[Ss]+[Aa]+[!{1, .}]", "America")
-         # country = str_replace_all(country, pattern = "^[uU]+[sS]+[aA]+[:punct:]+", "America")
-        
-        
-        # one of these has changed to The republic of States
-        
-#         )
-
-```
-
-
-2017 testing 
-```{r}
-# there must be a way to say U and anything after, space, S and anything after
-
-# country_clean_2017 <- candy_2017_renamed %>% 
-#  mutate(
-        # country = str_replace_all(country, pattern = "[ *][
-        # country = str_replace_all(country, pattern = "^.*[!].*", "States"),
-         #country = str_replace_all(country, pattern = "^[Uu]+[Ss]+[Aa]+[!{1, .}]", "America")
-         # country = str_replace_all(country, pattern = "^[uU]+[sS]+[aA]+[:punct:]+", "America")
-        
-        #)
-
-    
-#country_2017 %>% 
-#  select(country, state_or_prov) %>% 
- # filter(is.na(country))
-# 4 rows have an American state under "state_or_prov" 
-```
-
-
-AGE CLEANING 
-
-```{r}
-
-bound_age_cleaning <- bound_country_clean %>% 
-  mutate(age = as.numeric(age))
-
-# view(bound_age_cleaning)
-```
-
-
-
-
-      
-
-AGE QUESTION 
-```{r}
-#bound_candy %>% 
- # distinct(age)
-
-#274 different ages (chr)
-
-#bound_candy <- bound_candy %>% 
- # mutate(age = as.double(age))
-#need to remove all non-numbers and NAs first 
-
-#age_focus <- bound_candy %>% 
- # select(age) %>% 
-  #filter(age < "90") %>% 
-  #arrange(desc(age))#
-#view(age_focus) # still have 0.62, 142, 1e+18 etc in there...
-
-```
 
