@@ -2,22 +2,41 @@
 title: "Dirty Data Task 4 Analysis_Mahri"
 output: html_notebook
 ---
+## Dirty Data, Task Four
 
+Three excel files from 2015, 2016, and 2017 (named candy_2015, candy_2016, and 
+candy_2017 respectfully) showing survey answers to questions related to enjoyment 
+of certain candies were read, joined, and cleaned before being written into a 
+csv file which has been read below.
+All three questionnaires asked for respondent's ages however only 2016 and 2017 
+questionnaires asked for their gender and for the country and state/province the
+respondent was from. 
+Respondent's must have been given the questionnaires to fill in themselves as 
+spellings are incredibly varied (e.g. "US", "u.s.a.", "united states") and there 
+are some rather interesting responses, especially under age (e.g. "old enough") 
+and country (e.g. "'murrika!"). 
+From first glance, the candy names that have been asked about are vast and range 
+from the full name to a guess (e.g. "Tolberone something or other"), this may 
+lead to there not being great discrepancies in the results. Further "full sized 
+candy bars" seems rather generic so it has been ignored when considering some 
+of the questions.
+
+
+Loading appropriate libraries
 ```{r}
 library(tidyverse)
 library(readxl)
+library(stringr)
+library(here)
 ```
 
+Reading the clean data csv file.
 ```{r}
-candy_2015 <- read_excel("../raw_data/boing-boing-candy-2015.xlsx")
-candy_2016 <- read_excel("../raw_data/boing-boing-candy-2016.xlsx")
-candy_2017 <- read_excel("../raw_data/boing-boing-candy-2017.xlsx")
-candy_2015 <- read_csv("../data_cleaning_scripts/dirty_data_task_4_cleaning_script_mahri.R")
-
-here::here()
+candy_cleaned <- read_csv("../clean_data/candy_cleaned.csv")
 ```
 
-From glimpse 
+Using glimpse, head, and viewing the full files, I got an overview of the data,
+variables, types, and differences between the files.
 ```{r}
 head(candy_2015)
 glimpse(candy_2016)
@@ -25,14 +44,13 @@ glimpse(candy_2017)
 ```
 
 
-
+Using Janitor to tidy up column names, bringing all to lower case and separating 
+words with _
 ```{r}
 library(janitor)
-
 ```
 
 ```{r}
-
 janitor_candy_2015 <- janitor::clean_names(candy_2015)
 janitor_candy_2015
 
@@ -44,9 +62,10 @@ janitor_candy_2017
 ```
 
 
-just looking at who is reporting back about these ones... 
+Some columns took my interest due to confusion about what they might be about
+or whether people tended to have a certain opinion from first glance. 
+For example, I was curious as to who was reporting back about these candies: 
 ```{r}
-
 janitor_candy_2017 %>% 
   select(q3_age, q2_gender, q6_independent_m_ms, q6_green_party_m_ms)
 # all types of people
@@ -55,37 +74,38 @@ janitor_candy_2016 %>%
 #nobody 
 ```
 
-**REMOVE AND RENAME** 
+## **Cleaning** 
 
-Step 1 - Remove and add for each year
+####**REMOVE AND RENAME** 
 
-- For each of the three years, I removed columns that weren't candy having 
+Step 1 - Remove and add for each year (2015, 2016, 2017)
+
+* For each of the three years, I removed columns that weren't candy having 
  searched the internet to check on those I was not sure of. I also looked into
  responses for a few of the columns (e.g. different m&ms colors) to see if there
  were mostly joke responses/ any reason for me to join them together (I kept
  them as is excpet for changing some names to make it clearer to me what they 
  were - e.g. party bag of m&ms)
-- I removed columns by index from last position to first so that I could check 
+* I removed columns by index from last position to first so that I could check 
  that I didn't remove the wrong columns/ affect the order as I went.
-- Also adding a "year" column and removing "timestamp" from 2015 and 2016 
- for referencing the correct years after binding the rows of all three together
- (see if can work out extracting year from timestamp and moving over later). 
- Adding this after so that column index isn't ruined.
-- Added a personal ID number just to try different ways of adding/ mutating
+* Also adding a "year" column and removing "timestamp" from 2015 and 2016 
+ for referencing the correct years after binding the rows of all three together.
+ I added this after removing the others so that the column index wasn't affected.
+* Added a personal ID number just to try different ways of adding/ mutating
  columns. (note - went to base R to do this for 2016 & 17)
-- I probably didn't have to remove all of this (depending on question and outcome) 
-but I like that it gives me less to work with.
+* I probably didn't have to remove all of this (depending on question and outcome) 
+  but I like that it gives me less to work with.
 
 Step 2 - RENAME FOR EACH YEAR
 
-- Renaming columns so they match other years when binding rows. 
-- Considered merging the 2015 and 2016 "anonymous brown globs etc." columns with 
- their "Mary Janes" columns because in 2017 it is recorded as "anon brown... aka 
- Mary Janes"). But from looking at individuals responses, they don't match up so 
- I'll leave as "anonymous_black_and_orange_wrapper" and "mary_janes".
+* Renaming columns so they match other years when binding rows. 
+* Considered merging the 2015 and 2016 "anonymous brown globs etc." columns with 
+ their "Mary Janes" columns because in 2017 there is a record of "anon brown... 
+ aka Mary Janes"). But from looking at individual responses, they don't match 
+ up so I'll leave as "anonymous_black_and_orange_wrapper" and "mary_janes".
 
 
-2015 REMOVE AND ADD 
+**2015 REMOVE AND ADD**
 
 ```{r}
 # names(janitor_candy_2015)
@@ -107,15 +127,12 @@ col_removed_candy_2015 <- janitor_candy_2015 %>%
 col_removed_candy_2015
 #view(col_removed_candy_2015)
 
-
 ```
 
 
-
-2015 RENAME
+**2015 RENAME**
 ```{r}
-# Looking at differences between responses for Mary Janes thoughts
-
+# Looking at differences between responses for Mary Janes ratings
 # col_removed_candy_2015 %>% 
 #  select(anonymous_brown_globs_that_come_in_black_and_orange_wrappers, mary_janes)
 
@@ -143,7 +160,7 @@ candy_2015_renamed <- col_removed_candy_2015 %>%
 ```
 
 
-2016 - REMOVE AND ADD 
+**2016 - REMOVE AND ADD** 
 
 ```{r}
 col_removed_candy_2016 <- janitor_candy_2016 %>% 
@@ -161,7 +178,7 @@ col_removed_candy_2016 <- janitor_candy_2016 %>%
 col_removed_candy_2016 
 ```
 
-2016 RENAME
+**2016 RENAME**
 
 ```{r}
 # Again checking on Mary Janes column differences 
@@ -198,7 +215,7 @@ candy_2016_renamed
 ```
 
 
-2017 CLEAN AND ADD
+**2017 CLEAN AND ADD**
 Note - should have removed the "q6_" before this, but have done so in the next 
 chunk 
 
@@ -230,7 +247,8 @@ col_removed_candy_2017 <- janitor_candy_2017 %>%
 col_removed_candy_2017
 ```
 
-2017 RENAME - get rid of "q1/2/3/4/5/6" at the start of col names
+**2017 RENAME**
+Remove "q1/2/3/4/5/6" from the start of column names
 and rename to match 2015 and 16
 
 ```{r}
@@ -264,12 +282,6 @@ candy_2017_renamed <- candy_2017_q_removed %>%
          toblerone = tolberone_something_or_other)
   
 candy_2017_renamed
-```
-
-```{r}
-view(candy_2015_renamed)
-view(candy_2016_renamed)
-view(candy_2017_renamed)
 ```
 
 
@@ -307,6 +319,8 @@ distinct(candy_2017_renamed, starburst)
 ```
 
 
+####**JOINING**
+
 Joining all three years by binding rows so as to keep everything
 
 ```{r}
@@ -314,28 +328,30 @@ bound_candy <- bind_rows(candy_2015_renamed,
                          candy_2016_renamed, 
                          candy_2017_renamed)
 
-
 bound_candy <- bound_candy %>% 
   relocate(country, .before = 5) %>% 
   relocate(state_or_prov, .before = 6) %>% 
   relocate(gender, .before = 7)
 
-
 # view(bound_candy)
 ```
 
 
+##**QUESTIONS**
+(with additional cleaning in amongst my answers)
 
 
-
-**QUESTION 1** 
+####**QUESTION 1** 
 **What is the total number of candy ratings given across the three years.**
 **(Number of candy ratings, not the number of raters. Don’t count missing values)**
 
 * I removed unnecessary columns and pivoted longer all the candy columns so that 
   each rating could be seen alongside it's equivalent candy and then calculated
+  the total number
 
-**ANSWER** - 590,010 ratings
+**ANSWER**
+The total number of candy ratings across the three years was 590,010 ratings
+
 ```{r}
 
 total_ratings <- bound_candy %>% 
@@ -354,13 +370,14 @@ total_ratings
 
 
 
-**AGE CLEANING**
+####**AGE CLEANING**
 
 Age is a character column with 274 distinct values. They are a mix of numbers, NAs, 
 and strange and silly values.
 * I changed the "age" column to a numeric but it output strange figures, so I 
   specified "as.integer" and the strange answers became NAs. 
-* It seems unlikely that anyone over 100 years old is taking part, so I removed them.
+* It seems unlikely that anyone over 100 years old is taking part, so I removed 
+  them.
 
 ```{r}
 # bound_candy %>% 
@@ -379,7 +396,7 @@ bound_age_cleaning
 # view(bound_age_cleaning)
 ```
 
-**QUESTION TWO**
+####**QUESTION TWO**
 **What was the average age of people who are going out trick or treating?**
 
 * I checked that the responses for trick or treating are "Yes" "No " and "NA".
@@ -389,8 +406,9 @@ bound_age_cleaning
 * Both a tibble with the average of each of the three responses, and one of just
   the average age for the answer "Yes", were recorded below
 
-**ANSWER** - The (rounded) average age of those going trick or treating is 35
-years old (34.94897 is the unrounded value)
+**ANSWER** 
+The (rounded) average age of those going trick or treating is 35 years old 
+(34.94897 is the un-rounded value)
 
 ```{r}
 # bound_age_cleaning %>% 
@@ -410,14 +428,15 @@ bound_age_cleaning %>%
     
 ```
 
-**QUESTION THREE**
+####**QUESTION THREE**
 **What was the average age of people who are not going trick or treating?**
 
-* As in question two, however focusing on the answer "No" that was given when 
+* Repeate of question two, however focusing on the answer "No" that was given when 
   asked.
 
-**ANSWER** - The (rounded) average age of those not going trick or treating is 39
-years old (39.10454 is the unrounded value)
+**ANSWER** 
+The (rounded) average age of those not going trick or treating is 39 years old. 
+(39.10454 is the unrounded value)
 
 ```{r}
 bound_age_cleaning %>% 
@@ -434,7 +453,7 @@ bound_age_cleaning %>%
 
 ```
 
-**QUESTION FOUR** 
+####**QUESTION FOUR** 
 **For each of joy, despair and meh, which candy bar revived the most of these** 
 **ratings?** 
 
@@ -447,7 +466,7 @@ each candy, then filtering to find the maximum count for each rating.
           with 7,341
 * Joy: Full sized candy bars made the most people joyful with 7,589 responses.
     This seems very generic so I ran it again to remove the full sized candy
-    bars and the top Joy response was: 7369 responses for reeses peanut butter
+    bars and the top Joy response was: 7369 responses for reese's peanut butter
     cups
 * Meh: 1,570 "Meh" responses were given for lollipops
 
@@ -457,23 +476,8 @@ each candy, then filtering to find the maximum count for each rating.
 rated_candy <- bound_candy %>% 
   select(-c(year, id_number, age, 
             trick_or_treating, country, 
-            state_or_prov, gender, any_full_sized_candy_bar)) %>%
-  pivot_longer(butterfinger:take_5, 
-               names_to = "candy", 
-               values_to = "rating")
-rated_candy
-
-rated_candy %>% 
-  group_by(rating, candy) %>% 
-  summarise(number_of_ratings = n()) %>% 
-  filter(number_of_ratings == max(number_of_ratings))
-
-# run again removing generic "full sized candy bars"
-
-rated_candy <- bound_candy %>% 
-  select(-c(year, id_number, age, 
-            trick_or_treating, country, 
-            state_or_prov, gender, any_full_sized_candy_bar)) %>%
+            state_or_prov, gender, 
+            any_full_sized_candy_bar)) %>%
   pivot_longer(butterfinger:take_5, 
                names_to = "candy", 
                values_to = "rating")
@@ -486,13 +490,14 @@ rated_candy %>%
 
 ```
 
-**QUESTION FIVE**
+####**QUESTION FIVE**
 **How many people rated Starburst as despair?**
 
 * Using the pivoted table of candy and their ratings from previous questions, 
   the total count can be seen below
 
-**ANSWER** - 1990 people voted despair for starbursts.
+**ANSWER** 
+1990 people voted despair for starbursts.
 
 ```{r}
 
@@ -504,8 +509,9 @@ rated_candy %>%
 ```
 
 
+**----------QUESTIONS SIX, SEVEN, AND EIGHT AFTER COUNTRY CLEAN-------------**
 
-**COUNTRY CLEANING** 
+####**COUNTRY CLEANING** 
 
 Firstly getting an idea of NAs and distinct country values:
 
@@ -515,7 +521,6 @@ Firstly getting an idea of NAs and distinct country values:
  unknown answers 
 
 ```{r}
-
 bound_candy %>% 
   filter(is.na(country))
 
@@ -523,14 +528,6 @@ bound_candy %>%
   distinct(country) 
 ```
 
- 
-
-```{r}
-library(stringr)
-
-```
-
- 
 Using stringr and regex to reduce "country" values
 
 * This started out a lot longer, and I am sure there are faster/ better ways of 
@@ -564,6 +561,9 @@ Using stringr and regex to reduce "country" values
 
 * There are some more notes on specific pieces of code within the code chunk
 
+* Vectors were created for Unknown countries and other countries of the world to
+  change as many at once. 
+
 ```{r}
 bound_country_clean <- bound_age_cleaning %>% 
   mutate(country = str_replace_all(country, pattern = "[0-9][0-9][.][0-9]", "States"),
@@ -593,96 +593,46 @@ bound_country_clean %>%
   distinct(country)
 
 # view(bound_country_clean)
-          
 ```
 
- Other Countries: 
- Germany
- germany
- AStates (Australia)
- aStates (australia)
- Statesa (Austria)
- Japan 
- Mexico 
- Netherlands
- The Netherlands
- netherlands
- Sweden
- belgium
- Ireland 
- New ZeStates (New Zealand)
- Switzerland
- China
- France
- france
- Denmark
- Korea
- South Korea
- Brasil	
- cascadia
- Cascadia
- Costa Rica
- croatia
- españa
- spain
-South africa
-Europe	
- Finland	
-finland
-Greece
-hong kong
-Hong Kong	
-hungary
-Iceland
-Indonesia
-kenya
-Not theStatesor Canada
-Panama
-Philippines
-Portugal
-Singapore
-sweden
-Taiwan
-UAE
+Creating the "other" vectors and joining them to the data 
 
-Strange / tricky States ones I didn't get to: 
-Can
- Statesof A
- Sub-Canadian North America... 'Merica
- TheStates
- 1
- A
- A tropical island south of the equator
- Atlantis
- Denial
- Earth
- EUA
-Fear and Loathing
-I don't know anymore
-god's country
-insanity lately
-N. America (the state is in canada)	
-I pretend to be from Canada, but I am really from theStates
-Narnia
-Neverland
-one of the best ones
-See above
-Somewhere
-States(I think but it's an election year so who can really tell)
-States? Hard to tell anymore.
-Statess
-subscribe to dm4uz3 on youtube
-the best one -States
-The republic of Cascadia (this is half States half Canada)
-The States
-The Yoo Ess of Aaayyyyyy
-there isn't one for old men
-this one
-UD
-United States of America
+```{r}
+rest_of_the_world <- c("Germany", "germany", "AStates", "aStates", "Statesa", 
+                       "Japan", "Mexico", "Netherlands", "netherlands", "The Netherlands",
+                       "Sweden", "Belgium", "Ireland", "New ZeStates", "Switzerland",
+                       "China", "France", "france", "Denmark", "Korea", "South Korea",
+                       "Brasil", "cascadia", "Cascadia", "Costa Rica", "croatia", 
+                       "españa", "spain", "South africa", "Europe", "Finland", 
+                       "finland", "Greece", "hong kong", "Hong Kong", "hungary",
+                       "Iceland", "Indonesia", "kenya", "Not theStatesor Canada",
+                       "Panama", "Philippines", "Portugal", "Singapore", "sweden",
+                       "Taiwan", "UAE")
 
+unknown_country <- c("Can", "Statesof A","Sub-Canadian North America...", "'Merica",
+                     "TheStates", "1", "A", "A tropical island south of the equator", 
+                     "Atlantis", "Denial", "Earth", "EUA", "Fear and Loathing", 
+                     "I don't know anymore", "god's country", "insanity lately", 
+                     "N. America", "I pretend to be from Canada, but I am really 
+                     from theStates", "Narnia", "Neverland", "one of the best ones",
+                     "See above", "Somewhere", "States(I think but it's an election 
+                     year so who can really tell)", "States? Hard to tell anymore.",
+                     "Statess", "subscribe to dm4uz3 on youtube", "the best one -States",
+                     "The republic of Cascadia", "The States", "The Yoo Ess of Aaayyyyyy",
+                     "there isn't one for old men", "this one", "UD", 
+                     "United States of America")
 
+candy_cleaned <- bound_country_clean %>% 
+  mutate(country = if_else(country %in% rest_of_the_world, "Other", country),
+         country = if_else(country %in% unknown_country, as.character(NA), country))
 
+candy_cleaned %>% 
+  distinct(country)
+# still have 11 different "countries"
+```
+
+ 
+ 
 **For the next three questions, count despair as -1, joy as +1, and meh as 0.**
  
 - Needing to pivot again so can create a new column with ratings as numbers
@@ -690,8 +640,7 @@ United States of America
   column numeric 
 
 ```{r}
-
-candy_pivot_ratings <- bound_country_clean %>% 
+candy_pivot_ratings <- candy_cleaned %>% 
   select(-c(id_number, 
             age, 
             trick_or_treating, 
@@ -704,13 +653,10 @@ candy_pivot_ratings <- bound_country_clean %>%
                                      rating == "MEH" ~ 0)
          )
 candy_pivot_ratings
-
-#view(candy_pivot_ratings)
-
 ```
 
 
-**QUESTION SIX** 
+####**QUESTION SIX** 
 **What was the most popular candy bar by this rating system for each gender in**
 **the dataset?**
 
@@ -746,7 +692,7 @@ candy_pivot_ratings %>%
 
 ```
 
-**QUESTION SEVEN** 
+####**QUESTION SEVEN** 
 **What was the most popular candy bar in each year?**
 
 * Similar to questions six, the data was grouped by "year" and by "candy" before
@@ -768,7 +714,8 @@ candy_pivot_ratings %>%
   
 ```
 
-**QUESTION EIGHT** 
+
+####**QUESTION EIGHT** 
 **What was the most popular candy bar by this rating for people in US, Canada,** 
 **UK, and all other countries?**
 
@@ -789,59 +736,28 @@ The rest of the world: Kit-Kat
 
 ```{r}
 
-rest_of_the_world <- c("Germany", "germany", "AStates", "aStates", "Statesa", 
-                       "Japan", "Mexico", "Netherlands", "netherlands", "The Netherlands",
-                       "Sweden", "Belgium", "Ireland", "New ZeStates", "Switzerland",
-                       "China", "France", "france", "Denmark", "Korea", "South Korea",
-                       "Brasil", "cascadia", "Cascadia", "Costa Rica", "croatia", 
-                       "españa", "spain", "South africa", "Europe", "Finland", 
-                       "finland", "Greece", "hong kong", "Hong Kong", "hungary",
-                       "Iceland", "Indonesia", "kenya", "Not theStatesor Canada",
-                       "Panama", "Philippines", "Portugal", "Singapore", "sweden",
-                       "Taiwan", "UAE")
-
-unknown_country <- c("Can", "Statesof A","Sub-Canadian North America...", "'Merica",
-                     "TheStates", "1", "A", "A tropical island south of the equator", 
-                     "Atlantis", "Denial", "Earth", "EUA", "Fear and Loathing", 
-                     "I don't know anymore", "god's country", "insanity lately", 
-                     "N. America", "I pretend to be from Canada, but I am really 
-                     from theStates", "Narnia", "Neverland", "one of the best ones",
-                     "See above", "Somewhere", "States(I think but it's an election 
-                     year so who can really tell)", "States? Hard to tell anymore.",
-                     "Statess", "subscribe to dm4uz3 on youtube", "the best one -States",
-                     "The republic of Cascadia", "The States", "The Yoo Ess of Aaayyyyyy",
-                     "there isn't one for old men", "this one", "UD", 
-                     "United States of America")
-
-candy_pivot_ratings_country <- candy_pivot_ratings %>% 
-  mutate(country = if_else(country %in% rest_of_the_world, "Other", country),
-                   if_else(country %in% unknown_country, as.character(NA), country))
-candy_pivot_ratings_country %>% 
-  distinct(country)
-# still have 40 different "countries"
-  
-  
-candy_pivot_ratings_country %>% 
+candy_pivot_ratings %>% 
   filter(country == "States") %>% 
   group_by(candy) %>%
   summarise(rating_count = mean(ratings_numeric, na.rm = TRUE)) %>% 
   arrange(desc(rating_count))
 
-candy_pivot_ratings_country %>% 
+candy_pivot_ratings %>% 
   filter(country == "Canada") %>% 
   group_by(candy) %>%
   summarise(rating_count = mean(ratings_numeric, na.rm = TRUE)) %>% 
   arrange(desc(rating_count))
 
-candy_pivot_ratings_country %>% 
+candy_pivot_ratings %>% 
   filter(country == "United Kingdom") %>% 
   group_by(candy) %>%
   summarise(rating_count = mean(ratings_numeric, na.rm = TRUE)) %>% 
   arrange(desc(rating_count))
 
-candy_pivot_ratings_country %>% 
+candy_pivot_ratings %>% 
   filter(country == "Other") %>% 
   group_by(candy) %>%
   summarise(rating_count = mean(ratings_numeric, na.rm = TRUE)) %>% 
   arrange(desc(rating_count))
 ```
+
