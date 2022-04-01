@@ -1,0 +1,331 @@
+---
+title: "Dirty Data Project - Task Three - Mahri"
+output:
+  html_document:
+    df_print: paged
+---
+
+Seabird sightings from ships were recorded over many years at different latitudes.
+Whether spotted as a solitary bird or as a large group, their numbers were 
+recorded on each spotting along with their commonly known name, species specific
+name and a name abbreviation. 
+If details of a birds appearance (i.e. plumage phase), sex, or age were obvious 
+to the spotter, this was noted as well. 
+
+Having completed the questions, I now note that I should have separated details
+such as age/plumage from each name as these birds are still the same species. 
+This is something to come back to. 
+
+```{r}
+library(tidyverse)
+library(readxl)
+library(here)
+library(stringr)
+```
+
+
+Though there were four excel sheets:
+ship_data_by_record
+bird_data_by_record
+ship_data_codes
+bird_data_codes 
+The 3rd and 4th were only used to identify which columns may be of interest in 
+the first two sheets, which were used for cleaning and analysis. 
+
+There was no meta data to be removed.
+
+The sheets were cleaned in an R Script and written to a csv file which has been 
+read in here, below. 
+
+```{r}
+birds_and_ships_clean <- read_csv("../clean_data/birds_and_ships_clean.csv")
+```
+
+To get a quick idea of the variables and their types, glimps and names were used.
+* Note: both have RECORD and RECORD ID so plan to match on Record ID - lots in 
+  the birds birds data match with 1 in ship.
+  
+```{r}
+glimpse(ship_data_by_record)
+# 27 cols, 12,310 rows 
+
+glimpse(bird_data_by_record)
+# 26 cols, 49,019 rows
+
+names(ship_data_by_record)
+names(bird_data_by_record)
+```
+#### Cleaning
+
+Janitor was used for an initial column clean. Columns were then renamed with the 
+purpose of making them easier to read and those that were relevant to the 
+questions were selected:
+
+```{r}
+library(janitor)
+
+ship_data_records <- janitor::clean_names(ship_data_by_record)
+bird_data_records <- janitor::clean_names(bird_data_by_record)
+
+bird_data_renamed <- bird_data_records %>%
+  rename("species_common_name" = "species_common_name_taxon_age_sex_plumage_phase",
+         "species_scientific_name" = "species_scientific_name_taxon_age_sex_plumage_phase",
+         "birds_counted" = "count") %>% 
+  select(record, 
+        record_id, 
+        species_common_name, 
+        species_scientific_name, 
+        species_abbreviation, 
+        birds_counted)
+
+bird_data_renamed
+
+ship_data_renamed <- ship_data_records %>% 
+  rename("latitude" = "lat", 
+         "longitude" = "long") %>% 
+  select(record, 
+         record_id, 
+         date,
+         latitude, 
+         longitude)
+
+ship_data_renamed
+```
+
+
+## Left Join of the two sheets. 
+
+Joining on record_id, column order was rearranged, and I kept record numbers for 
+both the ship and the birds but named both more appropriately for understanding.
+
+```{r}
+birds_and_ships_joined <- left_join(bird_data_renamed, 
+                                    ship_data_renamed, by = "record_id") %>% 
+  rename("record_num_birds" = record.x, 
+         "record_num_ship" = record.y)  %>% 
+  relocate(birds_counted, .before = 1) %>% 
+  relocate(record_num_birds, .before = 7)
+
+birds_and_ships_joined
+```
+
+## Further Cleaning
+
+* Dropping appropriate NAs with regards to the questions (i.e. where bird count
+  is equal to NA (there were 2699 of them)).
+* Note that there are some bird names (of all 3 types) as "NA" and some latitudes 
+  (28) as "NA", but I'll wait and see if that's an issue later?.
+
+```{r}
+
+birds_and_ships_joined %>% 
+  arrange(!is.na(birds_counted)) %>% 
+  summarise(count = sum(is.na(birds_counted)))
+# there are 2699 records where bird count = NA 
+
+birds_and_ships <- birds_and_ships_joined %>% 
+  drop_na(birds_counted)
+
+birds_and_ships %>% 
+  summarise(count = sum(is.na(birds_counted)))
+# No NAs in bird count 
+
+birds_and_ships
+
+```
+
+Checks ran to make sure that all the columns are the correct type:
+* Note: there are 28 latitude failures and 29 longitude failures - these are 
+  all NA values. 
+* The latitude NA values all had quite a small bird count so I don't think it is 
+  an issue for the latitude question.
+* These small numbers are probably needed for the solo sightings question though 
+  so dropping them was not considered. 
+  
+```{r}
+glimpse(birds_and_ships)
+
+library(assertr)
+birds_and_ships %>% 
+  verify(latitude >= -90 & latitude <= 90)
+birds_and_ships %>% 
+  verify(longitude >= -180 & longitude <= 180)
+# there are 28 latitude failures and 29 longitude failures... 
+
+birds_and_ships %>% 
+  summarise(count = sum(is.na(latitude)))
+# there are 28 NA latitude values 
+birds_and_ships %>% 
+  summarise(count = sum(is.na(longitude)))
+# there are 29 NA longitude values
+
+birds_and_ships %>% 
+  arrange(!is.na(latitude))
+# small numbers as note above
+```
+
+
+#### **Analysis questions**
+
+For each question where we ask for bird names, give the bird’s common name, 
+scientific name and species abbreviation.
+
+
+**QUESTION ONE**
+**Which bird had the most individual sightings?**
+
+I'm not exactly sure what the question is asking for but here are two options: 
+
+1. The species of bird that was spotted on the most occasions (1 or 
+  more of them spotted at once) was:
+  
+  Common Name: Wandering albatross sensu lato PL2
+  Scientific Name: Diomedea antipodensis / exulans PL2
+  Species Abbreviation: DIOANTEXU PL2
+  This species of bird was spotted on 3099 separate occasions
+  
+2. For sightings of lone birds, which was observed the most:  
+
+ Common Name: Wandering albatross sensu lato PL3
+ Scientific Name: Diomedea antipodensis / exulans PL3
+ Species Abbreviation: DIOANTEXU PL3
+ This species of bird was spotted on it's own on 1707 separate occasions
+ 
+```{r}
+
+# 1
+birds_and_ships %>% 
+  select(species_abbreviation, 
+         species_common_name,
+         species_scientific_name,
+         birds_counted, 
+         record_id) %>% 
+  group_by(species_common_name) %>% 
+  summarise(count = n()) %>% 
+  arrange(desc(count))
+  
+# 2
+birds_and_ships %>% 
+  select(species_abbreviation, 
+         species_common_name,
+         species_scientific_name,
+         birds_counted, 
+         record_id) %>% 
+  filter(birds_counted == 1) %>% 
+  group_by(species_common_name) %>% 
+  summarise(count = n()) %>% 
+  arrange(desc(count))
+
+```
+
+**QUESTION TWO**
+**Which bird had the highest total count?**
+
+The bird with the highest total count (982,553) was:
+
+* Common Name: Short-tailed shearwater
+* Scientific Name: Puffinus tenuirostris
+* Species Abbreviation: PUFTEN
+* This bird had a total count of 982,553
+
+```{r}
+birds_and_ships %>% 
+  group_by(species_common_name) %>% 
+  summarise(n_birds = sum(birds_counted)) %>% 
+  arrange(desc(n_birds))
+```
+
+**QUESTION THREE**
+**Which bird had the highest total count above a latitude of -30?**
+
+This bird was seen alone or in groups above a latitude of -30 on 29 occasions. 
+An individual count of these birds (either alone or in groups) shows them to 
+have the highest total count of 855 birds:
+
+  * Common Name: Wedge-tailed shearwater.
+  * Scientific Name: Puffinus pacificus.
+  * Species Abbreviation: PUFPAC.
+
+```{r}
+birds_and_ships %>% 
+  select(species_abbreviation, 
+         species_common_name,
+         species_scientific_name,
+         birds_counted, 
+         latitude,
+         record_id) %>% 
+  filter(latitude > -30) %>% 
+  group_by(species_common_name) %>% 
+  summarise(count = n()) %>% 
+  arrange(desc(count))
+
+
+birds_and_ships %>% 
+  select(species_abbreviation, 
+         species_common_name,
+         species_scientific_name,
+         birds_counted, 
+         latitude,
+         record_id) %>% 
+  filter(latitude > -30) %>% 
+  group_by(species_common_name) %>% 
+  summarise(n_birds = sum(birds_counted)) %>% 
+  arrange(desc(n_birds))
+
+```
+
+**QUESTION FOUR**
+**How many different types of birds were only ever seen in groups of 1?**
+
+* Birds were firstly grouped by their common name and a filter was added to 
+  select only those who had a maximum of "1" in all of their "bird count" rows.
+* Each species was collected together using distinct() and the length of this 
+  response was noted 
+  
+**Answer**
+86 species of bird were only ever seen in groups of 1.
+However - I believe this number should be less as I have neglected to distinguish 
+between ages/plumage stage of the birds (these are still the same species). With 
+more time, I shall return to this. 
+
+```{r}
+single_sightings <- birds_and_ships %>% 
+  group_by(species_common_name) %>% 
+  filter((max(birds_counted)) == 1) %>% 
+  distinct(species_common_name) %>% 
+  pull() %>% 
+  length()
+single_sightings
+
+```
+
+
+**QUESTION FIVE** 
+**How many penguins were seen? (Hint: there are many types of penguin)**
+
+* Still working on this one, currently have the answer 10
+
+```{r}
+
+
+penguins <- birds_and_ships %>%
+  filter(str_detect(species_common_name, "[pP]enguin")) %>%
+  #summarise(penguin_count, n())
+  # pull() %>% 
+  length()
+  
+# penguin_pattern <- "[*][pP]enguin"
+
+# penguins <- birds_and_ships %>% 
+#  str_detect(penguin_pattern) %>% 
+#  length()
+#penguins
+# the above gives 9 false and 1 true. and then a length of 10... there are 9
+
+#penguins_seen <- birds_and_ships %>% 
+#  select(birds_counted, species_common_name) %>% 
+#  filter(species_common_name %in% c("Penguin", "penguin")) 
+
+
+```
+
