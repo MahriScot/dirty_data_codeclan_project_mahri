@@ -1,6 +1,8 @@
 ---
 title: "Dirty Data Task 4 Analysis_Mahri"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
 ---
 ## Dirty Data, Task Four
 
@@ -38,9 +40,9 @@ candy_cleaned <- read_csv("../clean_data/candy_cleaned.csv")
 Using glimpse, head, and viewing the full files, I got an overview of the data,
 variables, types, and differences between the files.
 ```{r}
-head(candy_2015)
-glimpse(candy_2016)
-glimpse(candy_2017)
+#head(candy_2015)
+#glimpse(candy_2016)
+#glimpse(candy_2017)
 ```
 
 
@@ -76,7 +78,7 @@ janitor_candy_2016 %>%
 
 ## **Cleaning** 
 
-####**REMOVE AND RENAME** 
+#### **REMOVE AND RENAME** 
 
 Step 1 - Remove and add for each year (2015, 2016, 2017)
 
@@ -131,6 +133,7 @@ col_removed_candy_2015
 
 
 **2015 RENAME**
+
 ```{r}
 # Looking at differences between responses for Mary Janes ratings
 # col_removed_candy_2015 %>% 
@@ -287,6 +290,7 @@ candy_2017_renamed
 
 
 Getting an idea of people's responses: 
+
 ```{r}
 
 distinct(candy_2015_renamed, age) 
@@ -319,7 +323,7 @@ distinct(candy_2017_renamed, starburst)
 ```
 
 
-####**JOINING**
+#### **JOINING**
 
 Joining all three years by binding rows so as to keep everything
 
@@ -337,11 +341,11 @@ bound_candy <- bound_candy %>%
 ```
 
 
-##**QUESTIONS**
+## **QUESTIONS**
 (with additional cleaning in amongst my answers)
 
 
-####**QUESTION 1** 
+#### **QUESTION 1** 
 **What is the total number of candy ratings given across the three years.**
 **(Number of candy ratings, not the number of raters. Don’t count missing values)**
 
@@ -370,7 +374,7 @@ total_ratings
 
 
 
-####**AGE CLEANING**
+#### **AGE CLEANING**
 
 Age is a character column with 274 distinct values. They are a mix of numbers, NAs, 
 and strange and silly values.
@@ -396,7 +400,7 @@ bound_age_cleaning
 # view(bound_age_cleaning)
 ```
 
-####**QUESTION TWO**
+#### **QUESTION TWO**
 **What was the average age of people who are going out trick or treating?**
 
 * I checked that the responses for trick or treating are "Yes" "No " and "NA".
@@ -428,7 +432,7 @@ bound_age_cleaning %>%
     
 ```
 
-####**QUESTION THREE**
+#### **QUESTION THREE**
 **What was the average age of people who are not going trick or treating?**
 
 * Repeate of question two, however focusing on the answer "No" that was given when 
@@ -453,7 +457,7 @@ bound_age_cleaning %>%
 
 ```
 
-####**QUESTION FOUR** 
+#### **QUESTION FOUR** 
 **For each of joy, despair and meh, which candy bar revived the most of these** 
 **ratings?** 
 
@@ -490,7 +494,7 @@ rated_candy %>%
 
 ```
 
-####**QUESTION FIVE**
+#### **QUESTION FIVE**
 **How many people rated Starburst as despair?**
 
 * Using the pivoted table of candy and their ratings from previous questions, 
@@ -509,9 +513,9 @@ rated_candy %>%
 ```
 
 
-**----------QUESTIONS SIX, SEVEN, AND EIGHT AFTER COUNTRY CLEAN-------------**
+#### **----------QUESTIONS SIX, SEVEN, AND EIGHT AFTER COUNTRY CLEAN-------------**
 
-####**COUNTRY CLEANING** 
+#### **COUNTRY CLEANING** 
 
 Firstly getting an idea of NAs and distinct country values:
 
@@ -656,7 +660,7 @@ candy_pivot_ratings
 ```
 
 
-####**QUESTION SIX** 
+#### **QUESTION SIX** 
 **What was the most popular candy bar by this rating system for each gender in**
 **the dataset?**
 
@@ -692,7 +696,7 @@ candy_pivot_ratings %>%
 
 ```
 
-####**QUESTION SEVEN** 
+#### **QUESTION SEVEN** 
 **What was the most popular candy bar in each year?**
 
 * Similar to questions six, the data was grouped by "year" and by "candy" before
@@ -715,7 +719,7 @@ candy_pivot_ratings %>%
 ```
 
 
-####**QUESTION EIGHT** 
+#### **QUESTION EIGHT** 
 **What was the most popular candy bar by this rating for people in US, Canada,** 
 **UK, and all other countries?**
 
@@ -761,3 +765,4 @@ candy_pivot_ratings %>%
   arrange(desc(rating_count))
 ```
 
+  
