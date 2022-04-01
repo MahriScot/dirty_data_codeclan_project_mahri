@@ -1,6 +1,7 @@
 #loading libraries
 library(tidyverse)
 library(readxl)
+library(stringr)
 
 #loading in data from excel sheets
 candy_2015 <- read_excel("../dirty_data_task_4_mahri/raw_data/boing-boing-candy-2015.xlsx")
@@ -172,7 +173,7 @@ bound_candy <- bound_candy %>%
 
 
 
-# pivoting longer to see candy against it's individual rating
+# pivoting longer to see just candy against it's individual rating
 total_ratings <- bound_candy %>% 
   select(-c(year, id_number, age, 
             trick_or_treating, country, 
@@ -194,8 +195,7 @@ bound_age_cleaning <- bound_age_to_numeric %>%
   mutate(age = if_else(age > 99, NA_integer_, age))
 
 
-# load library for stringr, regex
-library(stringr)
+
 
 # regex etc for cleaning the country column - there are lots of notes on this in 
 # the RMD analysis file
@@ -227,9 +227,54 @@ bound_country_clean <- bound_age_cleaning %>%
          country = str_replace_all(country, pattern = "^[eE]+[nN]+[a-zA-Z]*|^[sS]+[cC]+[a-zA-Z]*|[uU]+[nN]+[a-zA-Z]* [kK]+[.]*[a-zA-Z]*|[uU]+[.]*[kK]+[.]*", "United Kingdom")
   )
 
-bound_country_clean %>% 
-  distinct(country)
+
+
+# Creating "Other" country vectors
+
+rest_of_the_world <- c("Germany", "germany", "AStates", "aStates", "Statesa", 
+                       "Japan", "Mexico", "Netherlands", "netherlands", "The Netherlands",
+                       "Sweden", "Belgium", "Ireland", "New ZeStates", "Switzerland",
+                       "China", "France", "france", "Denmark", "Korea", "South Korea",
+                       "Brasil", "cascadia", "Cascadia", "Costa Rica", "croatia", 
+                       "españa", "spain", "South africa", "Europe", "Finland", 
+                       "finland", "Greece", "hong kong", "Hong Kong", "hungary",
+                       "Iceland", "Indonesia", "kenya", "Not theStatesor Canada",
+                       "Panama", "Philippines", "Portugal", "Singapore", "sweden",
+                       "Taiwan", "UAE")
+
+unknown_country <- c("Can", "Statesof A","Sub-Canadian North America...", "'Merica",
+                     "TheStates", "1", "A", "A tropical island south of the equator", 
+                     "Atlantis", "Denial", "Earth", "EUA", "Fear and Loathing", 
+                     "I don't know anymore", "god's country", "insanity lately", 
+                     "N. America", "I pretend to be from Canada, but I am really 
+                     from theStates", "Narnia", "Neverland", "one of the best ones",
+                     "See above", "Somewhere", "States(I think but it's an election 
+                     year so who can really tell)", "States? Hard to tell anymore.",
+                     "Statess", "subscribe to dm4uz3 on youtube", "the best one -States",
+                     "The republic of Cascadia", "The States", "The Yoo Ess of Aaayyyyyy",
+                     "there isn't one for old men", "this one", "UD", 
+                     "United States of America")
+
+candy_cleaned <- bound_country_clean %>% 
+  mutate(country = if_else(country %in% rest_of_the_world, "Other", country),
+         country = if_else(country %in% unknown_country, as.character(NA), country))
+
+# still have 11 different "countries" unfortunately 
+
+# Another pivot to see specific rating values against each candy
+candy_pivot_ratings <- candy_cleaned %>% 
+  select(-c(id_number, 
+            age, 
+            trick_or_treating, 
+            state_or_prov)) %>% 
+  pivot_longer(butterfinger:take_5, 
+               names_to = "candy", 
+               values_to = "rating") %>% 
+  mutate(ratings_numeric = case_when(rating == "JOY" ~ 1, 
+                                     rating == "DESPAIR" ~ -1,
+                                     rating == "MEH" ~ 0)
+  ) 
 
 
 # Writing clean data to a csv file
-# write_csv(candy_combined_clean , "clean_data/candy_clean.csv")
+write_csv(candy_cleaned , "clean_data/candy_cleaned.csv")
